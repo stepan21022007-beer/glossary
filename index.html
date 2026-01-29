@@ -100,4 +100,103 @@
       color: white;
       transition: background 0.2s, transform 0.1s;
     }
-    button:hover { background
+    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    #result {
+      margin-top: 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: none;
+    }
+    .term-title { margin: 0 0 0.8rem; color: var(--primary); font-size: 1.35rem; }
+    .term-def { margin: 0; color: var(--text-light); line-height: 1.7; }
+    #error { color: var(--danger); margin-top: 1rem; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Глоссарий</h1>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
+        <i class="fas fa-moon"></i>
+      </button>
+    </header>
+
+    <nav>
+      <a href="./all.html">Все термины</a>
+      <a href="./add.html">Добавить термин</a>
+    </nav>
+
+    <section>
+      <input id="searchTerm" placeholder="Введите термин..." />
+      <button onclick="search()">Найти</button>
+      <div id="result">
+        <h3 class="term-title" id="result-term"></h3>
+        <p class="term-def" id="result-def"></p>
+      </div>
+    </section>
+
+    <div id="error"></div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
+
+    function search() {
+      const term = document.getElementById("searchTerm").value.trim();
+      if (!term) return alert("Введите термин");
+
+      glossary.doc(term).get()
+        .then(doc => {
+          const result = document.getElementById("result");
+          const error = document.getElementById("error");
+          error.textContent = "";
+          if (doc.exists) {
+            const data = doc.data();
+            document.getElementById("result-term").textContent = term;
+            document.getElementById("result-def").innerHTML = data.definition.replace(/\n/g, "<br>");
+            result.style.display = "block";
+          } else {
+            error.textContent = "Термин не найден";
+            result.style.display = "none";
+          }
+        })
+        .catch(e => {
+          document.getElementById("error").textContent = "Ошибка: " + e.message;
+        });
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.querySelector('.theme-toggle i');
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        icon.className = 'fas fa-moon';
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        icon.className = 'fas fa-sun';
+      }
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
+    }
+  </script>
+</body>
+</html>
