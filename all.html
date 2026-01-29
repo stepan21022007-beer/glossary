@@ -1,150 +1,45 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Глоссарий — Все термины</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --text-light: #64748b;
-      --border: #e2e8f0;
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --danger: #ef4444;
-    }
-    [data-theme="dark"] {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #e2e8f0;
-      --text-light: #94a3b8;
-      --border: #334155;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      transition: background 0.4s, color 0.4s;
-    }
-    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-    h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
-    nav {
-      display: flex;
-      gap: 1.5rem;
-      justify-content: center;
-      margin: 1.5rem 0 2rem;
-      flex-wrap: wrap;
-    }
-    nav a {
-      color: var(--text-light);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    nav a:hover { color: var(--primary); }
-    .theme-toggle {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-light);
-      transition: color 0.2s, transform 0.2s;
-    }
-    .theme-toggle:hover { color: var(--primary); transform: scale(1.15); }
-    section {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 2rem;
-      margin: 1.5rem 0;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-    button {
-      padding: 0.9rem 1.8rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      transition: background 0.2s, transform 0.1s;
-    }
-    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .term-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.2rem;
-      transition: all 0.3s ease;
-    }
-    .term-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-    }
-    .term-title {
-      margin: 0 0 0.8rem;
-      color: var(--primary);
-      font-size: 1.35rem;
-      font-weight: 600;
-    }
-    .term-def {
-      margin: 0;
-      color: var(--text-light);
-      line-height: 1.7;
-    }
-    .delete-btn {
-      margin-top: 1rem;
-      background: var(--danger);
-      padding: 0.6rem 1.2rem;
-      font-size: 0.9rem;
-    }
-    .delete-btn:hover { background: #dc2626; }
-    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
-    .loading { text-align: center; color: var(--text-light); padding: 2rem 0; font-style: italic; }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+    h1 { text-align: center; color: #333; }
+    section { margin: 30px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: white; }
+    button { padding: 10px 20px; font-size: 16px; margin: 8px 0 0 0; cursor: pointer; border: none; border-radius: 4px; color: white; background: #6f42c1; }
+    .term-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+    .term-item h3 { margin: 0 15px 8px 0; display: inline-block; color: #0056b3; }
+    .delete-btn { background: #dc3545; padding: 6px 12px; font-size: 14px; color: white; border: none; cursor: pointer; border-radius: 4px; }
+    #allTerms { margin-top: 20px; line-height: 1.6; }
+    #status { color: #555; font-style: italic; margin: 10px 0; }
+    nav { text-align: center; margin: 20px 0; }
+    nav a { margin: 0 10px; color: #0056b3; text-decoration: none; }
+    #error { color: red; font-weight: bold; margin: 15px 0; padding: 10px; background: #ffebee; border-radius: 4px; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Все термины</h1>
-      <button class="theme-toggle" onclick="toggleTheme()">
-        <i class="fas fa-moon"></i>
-      </button>
-    </header>
+  <h1>Глоссарий — Все термины по алфавиту</h1>
 
-    <nav>
-      <a href="./index.html">Поиск</a>
-      <a href="./add.html">Добавить термин</a>
-    </nav>
+  <nav>
+    <a href="./index.html">Поиск</a>
+    <a href="./add.html">Добавить термин</a>
+  </nav>
 
-    <section>
-      <button onclick="showAll()">Обновить список</button>
-      <div id="status" class="loading">Нажмите кнопку, чтобы загрузить</div>
-      <div id="allTerms"></div>
-    </section>
+  <section>
+    <button onclick="showAll()">Показать / обновить список</button>
+    <div id="status">Нажмите кнопку, чтобы загрузить термины</div>
+    <div id="allTerms"></div>
+  </section>
 
-    <div id="error"></div>
-  </div>
+  <div id="error"></div>
 
   <script>
+    // Конфиг Firebase — копируй из index.html или add.html, если отличается
     const firebaseConfig = {
       apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
       authDomain: "my-glossary-55f58.firebaseapp.com",
@@ -154,74 +49,85 @@
       appId: "1:875015503393:web:e8b19a0213be249275ad60"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const glossary = db.collection("glossary");
+    // Проверяем загрузку Firebase
+    if (typeof firebase === 'undefined') {
+      document.getElementById("error").textContent = "Firebase SDK не загрузился. Проверь интернет и перезагрузи страницу.";
+      document.getElementById("status").textContent = "";
+    } else {
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const glossary = db.collection("glossary");
 
-    function showAll() {
-      document.getElementById("error").textContent = "";
-      document.getElementById("status").textContent = "Загрузка...";
+      const errorDiv = document.getElementById("error");
+      const statusDiv = document.getElementById("status");
 
-      glossary.get()
-        .then(snapshot => {
-          const container = document.getElementById("allTerms");
-          container.innerHTML = "";
-          if (snapshot.empty) {
-            container.innerHTML = "<p style='text-align:center;color:var(--text-light);'>Пока нет терминов</p>";
-            document.getElementById("status").textContent = "";
-            return;
-          }
-          const items = [];
-          snapshot.forEach(doc => items.push({ term: doc.id, def: doc.data().definition }));
-          items.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
-          items.forEach(item => {
-            const card = document.createElement("div");
-            card.className = "term-card";
-            card.innerHTML = `
-              <h3 class="term-title">${item.term}</h3>
-              <p class="term-def">${item.def.replace(/\n/g, "<br>")}</p>
-              <button class="delete-btn" onclick="deleteTerm('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
-            `;
-            container.appendChild(card);
+      function showAll() {
+        errorDiv.textContent = "";
+        statusDiv.textContent = "Загрузка терминов...";
+
+        console.log("Запуск загрузки терминов...");
+
+        glossary.get()
+          .then(snapshot => {
+            console.log("Успех! Получено документов:", snapshot.size);
+
+            const container = document.getElementById("allTerms");
+            container.innerHTML = "";
+
+            if (snapshot.empty) {
+              container.innerHTML = "<p>Глоссарий пока пуст. Добавьте термины на странице «Добавить термин».</p>";
+              statusDiv.textContent = "Загружено 0 терминов";
+              return;
+            }
+
+            const items = [];
+            snapshot.forEach(doc => {
+              items.push({ term: doc.id, def: doc.data().definition });
+              console.log("Термин:", doc.id);
+            });
+
+            items.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
+
+            items.forEach(item => {
+              const div = document.createElement("div");
+              div.className = "term-item";
+              div.innerHTML = `
+                <h3>${item.term}</h3>
+                <p>${item.def.replace(/\n/g, "<br>")}</p>
+                <button class="delete-btn" onclick="deleteTerm('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
+              `;
+              container.appendChild(div);
+            });
+
+            statusDiv.textContent = `Найдено терминов: ${items.length}`;
+          })
+          .catch(e => {
+            console.error("Ошибка загрузки:", e);
+            errorDiv.textContent = "Ошибка загрузки: " + e.message + " (код: " + (e.code || "неизвестно") + ")<br>Проверь правила Firestore (allow read) и интернет.";
+            statusDiv.textContent = "Не удалось загрузить термины";
           });
-          document.getElementById("status").textContent = `Найдено: ${items.length}`;
-        })
-        .catch(e => {
-          document.getElementById("error").textContent = "Ошибка загрузки: " + e.message;
-          document.getElementById("status").textContent = "";
-        });
-    }
-
-    function deleteTerm(term) {
-      if (!confirm(`Удалить "${term}"?`)) return;
-      glossary.doc(term).delete()
-        .then(() => {
-          alert("Удалено");
-          showAll();
-        })
-        .catch(e => alert("Ошибка: " + e.message));
-    }
-
-    function toggleTheme() {
-      const body = document.body;
-      const icon = document.querySelector('.theme-toggle i');
-      if (body.getAttribute('data-theme') === 'dark') {
-        body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        icon.className = 'fas fa-moon';
-      } else {
-        body.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        icon.className = 'fas fa-sun';
       }
-    }
 
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.setAttribute('data-theme', 'dark');
-      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
-    }
+      function deleteTerm(term) {
+        if (!confirm(`Удалить "${term}"?`)) return;
 
-    window.onload = showAll;
+        errorDiv.textContent = "";
+        statusDiv.textContent = "Удаление...";
+
+        glossary.doc(term).delete()
+          .then(() => {
+            alert("Удалено!");
+            showAll();
+          })
+          .catch(e => {
+            errorDiv.textContent = "Ошибка удаления: " + e.message;
+            statusDiv.textContent = "";
+          });
+      }
+
+      // Автозагрузка
+      window.onload = showAll;
+    }
   </script>
 </body>
 </html>
