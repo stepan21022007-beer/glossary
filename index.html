@@ -17,6 +17,7 @@
       --border: #e2e8f0;
       --primary: #6366f1;
       --primary-dark: #4f46e5;
+      --danger: #ef4444;
     }
     [data-theme="dark"] {
       --bg: #0f172a;
@@ -99,48 +100,4 @@
       color: white;
       transition: background 0.2s, transform 0.1s;
     }
-    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    #result {
-      margin-top: 1.5rem;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.5rem;
-      display: none;
-    }
-    .term-title { margin: 0 0 0.8rem; color: var(--primary); font-size: 1.35rem; }
-    .term-def { margin: 0; color: var(--text-light); line-height: 1.7; }
-    #error { color: #ef4444; margin-top: 1rem; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <header>
-      <h1>Глоссарий</h1>
-      <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
-        <i class="fas fa-moon"></i>
-      </button>
-    </header>
-
-    <nav>
-      <a href="./all.html">Все термины</a>
-      <a href="./add.html">Добавить термин</a>
-    </nav>
-
-    <section>
-      <input id="searchTerm" placeholder="Введите термин..." />
-      <button onclick="search()">Найти</button>
-      <div id="result">
-        <h3 class="term-title" id="result-term"></h3>
-        <p class="term-def" id="result-def"></p>
-      </div>
-    </section>
-
-    <div id="error"></div>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-      authDomain: "my-glossary-55f58.firebase
+    button:hover { background
