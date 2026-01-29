@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Глоссарий — Поиск</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
-      --card: white;
+      --card: #ffffff;
       --text: #1e293b;
       --text-light: #64748b;
       --border: #e2e8f0;
@@ -25,15 +25,15 @@
       --text-light: #94a3b8;
       --border: #334155;
     }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       transition: background 0.4s, color 0.4s;
     }
-    .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
     header {
       display: flex;
       justify-content: space-between;
@@ -41,8 +41,14 @@
       padding: 1.5rem 0;
       border-bottom: 1px solid var(--border);
     }
-    h1 { margin: 0; font-size: 1.8rem; font-weight: 600; }
-    nav { display: flex; gap: 1.5rem; }
+    h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
+    nav {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin: 1.5rem 0 2rem;
+      flex-wrap: wrap;
+    }
     nav a {
       color: var(--text-light);
       text-decoration: none;
@@ -53,17 +59,19 @@
     .theme-toggle {
       background: none;
       border: none;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       cursor: pointer;
       color: var(--text-light);
+      transition: color 0.2s, transform 0.2s;
     }
+    .theme-toggle:hover { color: var(--primary); transform: scale(1.15); }
     section {
       background: var(--card);
       border-radius: 12px;
-      padding: 1.8rem;
-      margin: 2rem 0;
+      padding: 2rem;
+      margin: 1.5rem 0;
       border: 1px solid var(--border);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
     }
     input {
       width: 100%;
@@ -73,6 +81,7 @@
       font-size: 1rem;
       background: var(--bg);
       color: var(--text);
+      margin: 0.8rem 0;
     }
     input:focus {
       outline: none;
@@ -90,13 +99,9 @@
       color: white;
       transition: background 0.2s, transform 0.1s;
     }
-    button:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-    }
+    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
     #result {
       margin-top: 1.5rem;
-      line-height: 1.6;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -104,8 +109,8 @@
       display: none;
     }
     .term-title { margin: 0 0 0.8rem; color: var(--primary); font-size: 1.35rem; }
-    .term-def { margin: 0; color: var(--text-light); }
-    #error { color: #ef4444; margin-top: 1rem; }
+    .term-def { margin: 0; color: var(--text-light); line-height: 1.7; }
+    #error { color: #ef4444; margin-top: 1rem; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -138,7 +143,4 @@
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-      authDomain: "my-glossary-55f58.firebaseapp.com",
-      projectId: "my-glossary-55f58",
-      storageBucket: "my-glossary-55f58.firebasestorage.app",
-      messagingSenderId:
+      authDomain: "my-glossary-55f58.firebase
