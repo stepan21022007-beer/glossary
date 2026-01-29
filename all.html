@@ -3,76 +3,126 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Глоссарий — Поиск</title>
+  <title>Глоссарий — Все термины</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
-    h1 { text-align: center; color: #333; }
-    section { margin: 30px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: white; }
-    input { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border: 1px solid #aaa; border-radius: 4px; }
-    button { padding: 10px 20px; font-size: 16px; margin: 8px 0 0 0; cursor: pointer; border: none; border-radius: 4px; color: white; background: #007bff; }
-    #result { margin-top: 20px; line-height: 1.6; }
-    nav { text-align: center; margin: 20px 0; }
-    nav a { margin: 0 10px; color: #0056b3; text-decoration: none; }
-    #error { color: red; font-weight: bold; margin: 15px 0; }
+    /* Тот же стиль, что в index.html — скопируй из предыдущего файла */
+    /* Добавляем только специфичное для карточек */
+    .term-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+    .term-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+    .term-title {
+      margin: 0 0 0.6rem;
+      color: var(--primary);
+      font-size: 1.3rem;
+    }
+    .term-def {
+      margin: 0;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+    .delete-btn {
+      margin-top: 0.8rem;
+      background: #ef4444;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+    }
+    .delete-btn:hover { background: #dc2626; }
   </style>
 </head>
 <body>
 
-  <h1>Глоссарий — Поиск по термину</h1>
+  <div class="container">
+    <header>
+      <h1>Все термины</h1>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+      </button>
+    </header>
 
-  <nav>
-    <a href="./index.html">Поиск</a>
-    <a href="./all.html">Все термины</a>
-  </nav>
+    <nav>
+      <a href="./index.html">Поиск</a>
+      <a href="./add.html">Добавить термин</a>
+    </nav>
 
-  <section>
-    <input id="searchTerm" placeholder="Введите термин..." />
-    <button onclick="search()">Найти</button>
-    <div id="result"></div>
-  </section>
+    <section>
+      <button onclick="showAll()">Обновить список</button>
+      <div id="status" class="loading"></div>
+      <div id="allTerms"></div>
+    </section>
 
-  <div id="error"></div>
+    <div id="error"></div>
+  </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-      authDomain: "my-glossary-55f58.firebaseapp.com",
-      projectId: "my-glossary-55f58",
-      storageBucket: "my-glossary-55f58.firebasestorage.app",
-      messagingSenderId: "875015503393",
-      appId: "1:875015503393:web:e8b19a0213be249275ad60"
-    };
+    const firebaseConfig = { /* тот же конфиг, что в index.html */ };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
 
-    if (typeof firebase === 'undefined') {
-      document.getElementById("error").textContent = "Firebase не загрузился. Проверь интернет.";
-    } else {
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      const glossary = db.collection("glossary");
-      const errorDiv = document.getElementById("error");
+    function showAll() {
+      document.getElementById("error").textContent = "";
+      document.getElementById("status").textContent = "Загрузка...";
 
-      function search() {
-        errorDiv.textContent = "";
-        const term = document.getElementById("searchTerm").value.trim();
-        if (!term) return alert("Введите термин");
-
-        glossary.doc(term).get()
-          .then(doc => {
-            const result = document.getElementById("result");
-            if (doc.exists) {
-              const data = doc.data();
-              result.innerHTML = `<strong>${term}:</strong><br>${data.definition.replace(/\n/g, "<br>")}`;
-            } else {
-              result.innerHTML = "Не найдено.";
-            }
-          })
-          .catch(e => {
-            errorDiv.textContent = "Ошибка поиска: " + e.message;
+      glossary.get()
+        .then(snapshot => {
+          const container = document.getElementById("allTerms");
+          container.innerHTML = "";
+          if (snapshot.empty) {
+            container.innerHTML = "<p>Пока нет терминов</p>";
+            document.getElementById("status").textContent = "";
+            return;
+          }
+          const items = [];
+          snapshot.forEach(doc => {
+            items.push({ term: doc.id, def: doc.data().definition });
           });
-      }
+          items.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
+          items.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "term-card";
+            card.innerHTML = `
+              <h3 class="term-title">${item.term}</h3>
+              <p class="term-def">${item.def.replace(/\n/g, "<br>")}</p>
+              <button class="delete-btn" onclick="deleteTerm('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
+            `;
+            container.appendChild(card);
+          });
+          document.getElementById("status").textContent = `Найдено: ${items.length}`;
+        })
+        .catch(e => {
+          document.getElementById("error").textContent = "Ошибка загрузки: " + e.message;
+          document.getElementById("status").textContent = "";
+        });
     }
+
+    function deleteTerm(term) {
+      if (!confirm(`Удалить "${term}"?`)) return;
+      glossary.doc(term).delete()
+        .then(() => {
+          alert("Удалено");
+          showAll();
+        })
+        .catch(e => alert("Ошибка: " + e.message));
+    }
+
+    function toggleTheme() { /* тот же код переключения темы */ }
+
+    if (localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+
+    window.onload = showAll;
   </script>
 </body>
 </html>
