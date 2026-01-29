@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Глоссарий — Общий мини-справочник</title>
+
+  <!-- Firebase Compat SDK (стабильная версия) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    h1 { text-align: center; color: #333; }
+    section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      box-sizing: border-box;
+      font-size: 16px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 8px 4px 0 0;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      color: white;
+    }
+    .add-btn    { background: #28a745; }
+    .search-btn { background: #007bff; }
+    .show-btn   { background: #6f42c1; }
+    .delete-btn { background: #dc3545; padding: 6px 12px; font-size: 14px; }
+    .term-item  {
+      border-bottom: 1px solid #eee;
+      padding: 15px 0;
+    }
+    .term-item h3 {
+      margin: 0 15px 8px 0;
+      display: inline-block;
+      color: #0056b3;
+    }
+    #result, #allTerms {
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+    #status {
+      color: #555;
+      font-style: italic;
+      margin: 10px 0;
+    }
+    #error {
+      color: red;
+      font-weight: bold;
+      margin: 15px 0;
+      padding: 10px;
+      background: #ffebee;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Глоссарий — Общий мини-справочник</h1>
+
+  <section>
+    <h2>Добавить / изменить термин</h2>
+    <input id="term" placeholder="Термин (обязательно)" />
+    <textarea id="definition" rows="5" placeholder="Определение..."></textarea>
+    <button class="add-btn" onclick="addOrUpdate()">Сохранить</button>
+  </section>
+
+  <section>
+    <h2>Поиск по термину</h2>
+    <input id="searchTerm" placeholder="Введите термин..." />
+    <button class="search-btn" onclick="search()">Найти</button>
+    <div id="result"></div>
+  </section>
+
+  <section>
+    <h2>Все термины (по алфавиту)</h2>
+    <button class="show-btn" onclick="showAll()">Показать / обновить список</button>
+    <div id="status"></div>
+    <div id="allTerms"></div>
+  </section>
+
+  <div id="error"></div>
+
+  <script>
+  // Сначала объявляем все переменные и элементы
+  const errorDiv = document.getElementById("error");
+  const statusDiv = document.getElementById("status");
+
+  // Твой конфиг Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+    authDomain: "my-glossary-55f58.firebaseapp.com",
+    projectId: "my-glossary-55f58",
+    storageBucket: "my-glossary-55f58.firebasestorage.app",
+    messagingSenderId: "875015503393",
+    appId: "1:875015503393:web:e8b19a0213be249275ad60"
+  };
+
+  // Ждём загрузки Firebase скриптов
+  if (typeof firebase === 'undefined') {
+    console.error("Firebase не загрузился. Проверь подключение к интернету и ссылки на CDN.");
+    errorDiv.textContent = "Ошибка: Firebase не загрузился. Проверь интернет и перезагрузи страницу.";
+  } else {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
+
+    function addOrUpdate() {
+      errorDiv.textContent = "";
+      let term = document.getElementById("term").value.trim();
+      let def = document.getElementById("definition").value.trim();
+
+      term = term.replace(/[\u200B-\u200D\uFEFF]/g, '');
+      def = def.replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+      if (!term || !def) {
+        alert("Заполните оба поля!");
+        return;
+      }
+
+      glossary.doc(term).set({
+        definition: def,
+        updated: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        alert("Термин сохранён!");
+        document.getElementById("term").value = "";
+        document.getElementById("definition").value = "";
+        showAll();
+      })
+      .catch(e => {
+        console.error("Ошибка сохранения:", e);
+        errorDiv.textContent = "Ошибка сохранения: " + (e.message || e.code || "Неизвестная ошибка");
+      });
+    }
+
+    function search() {
+      errorDiv.textContent = "";
+      const term = document.getElementById("searchTerm").value.trim();
+      if (!term) return alert("Введите термин");
+
+      glossary.doc(term).get()
+      .then(doc => {
+        const result = document.getElementById("result");
+        if (doc.exists) {
+          const data = doc.data();
+          result.innerHTML = `<strong>${term}:</strong><br>${data.definition.replace(/\n/g, "<br>")}`;
+        } else {
+          result.innerHTML = "Не найдено.";
+        }
+      })
+      .catch(e => {
+        errorDiv.textContent = "Ошибка поиска: " + (e.message || e.code);
+      });
+    }
+
+    function showAll() {
+      errorDiv.textContent = "";
+      statusDiv.textContent = "Загрузка терминов...";
+
+      glossary.get()
+      .then(snapshot => {
+        const container = document.getElementById("allTerms");
+        container.innerHTML = "";
+
+        if (snapshot.empty) {
+          container.innerHTML = "<p>Глоссарий пока пуст.</p>";
+          statusDiv.textContent = "";
+          return;
+        }
+
+        const items = [];
+        snapshot.forEach(doc => {
+          items.push({ term: doc.id, def: doc.data().definition });
+        });
+
+        items.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
+
+        items.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "term-item";
+          div.innerHTML = `
+            <h3>${item.term}</h3>
+            <p>${item.def.replace(/\n/g, "<br>")}</p>
+            <button class="delete-btn" onclick="deleteTerm('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
+          `;
+          container.appendChild(div);
+        });
+
+        statusDiv.textContent = `Найдено терминов: ${items.length}`;
+      })
+      .catch(e => {
+        errorDiv.textContent = "Ошибка загрузки списка: " + (e.message || e.code);
+        statusDiv.textContent = "";
+      });
+    }
+
+    function deleteTerm(term) {
+      if (!confirm(`Удалить "${term}"?`)) return;
+
+      errorDiv.textContent = "";
+      glossary.doc(term).delete()
+      .then(() => {
+        alert("Удалено!");
+        showAll();
+      })
+      .catch(e => {
+        errorDiv.textContent = "Ошибка удаления: " + (e.message || e.code);
+      });
+    }
+
+    // Запуск при загрузке страницы
+    showAll();
+  }
+</script>
+</body>
+</html>
