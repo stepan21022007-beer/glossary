@@ -4,57 +4,54 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Глоссарий — Добавить термин</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
-    /* Тот же общий стиль из index.html */
-    #passwordForm {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 2rem;
-      text-align: center;
-      max-width: 500px;
-      margin: 4rem auto;
-    }
-    #addForm {
-      display: none;
-    }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+    h1 { text-align: center; color: #333; }
+    section { margin: 30px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: white; }
+    input, textarea { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border: 1px solid #aaa; border-radius: 4px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 8px 0 0 0; cursor: pointer; border: none; border-radius: 4px; color: white; background: #28a745; }
+    nav { text-align: center; margin: 20px 0; }
+    nav a { margin: 0 10px; color: #0056b3; text-decoration: none; }
+    #error { color: red; font-weight: bold; margin: 15px 0; }
+    #passwordForm { text-align: center; }
+    #addForm { display: none; } /* скрыто по умолчанию */
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Добавить термин</h1>
-      <button class="theme-toggle" onclick="toggleTheme()">
-        <i class="fas fa-moon"></i>
-      </button>
-    </header>
+  <h1>Глоссарий — Добавить / изменить термин</h1>
 
-    <nav>
-      <a href="./index.html">Поиск</a>
-      <a href="./all.html">Все термины</a>
-    </nav>
+  <nav>
+    <a href="./index.html">Поиск</a>
+    <a href="./all.html">Все термины</a>
+  </nav>
 
-    <section id="passwordForm">
-      <h3>Введите пароль</h3>
-      <input type="password" id="password" placeholder="Пароль..." />
-      <button onclick="checkPassword()">Войти</button>
-    </section>
+  <section id="passwordForm">
+    <p>Введите пароль для доступа:</p>
+    <input type="password" id="password" placeholder="Пароль..." />
+    <button onclick="checkPassword()">Войти</button>
+  </section>
 
-    <section id="addForm">
-      <input id="term" placeholder="Термин (обязательно)" />
-      <textarea id="definition" rows="6" placeholder="Определение..."></textarea>
-      <button onclick="addOrUpdate()">Сохранить</button>
-    </section>
+  <section id="addForm">
+    <input id="term" placeholder="Термин (обязательно)" />
+    <textarea id="definition" rows="5" placeholder="Определение..."></textarea>
+    <button onclick="addOrUpdate()">Сохранить</button>
+  </section>
 
-    <div id="error"></div>
-  </div>
+  <div id="error"></div>
 
   <script>
-    const firebaseConfig = { /* тот же конфиг */ };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const glossary = db.collection("glossary");
@@ -62,18 +59,24 @@
     const PASSWORD = "bm2315"; // ← твой пароль
 
     function checkPassword() {
-      if (document.getElementById("password").value === PASSWORD) {
-        document.getElementById("passwordForm").style.display = "none";
-        document.getElementById("addForm").style.display = "block";
+      const pass = document.getElementById("password").value;
+      const passwordForm = document.getElementById("passwordForm");
+      const addForm = document.getElementById("addForm");
+      const error = document.getElementById("error");
+
+      if (pass === PASSWORD) {
+        passwordForm.style.display = "none";
+        addForm.style.display = "block";
+        error.textContent = "";
       } else {
-        alert("Неверный пароль");
+        error.textContent = "Неверный пароль!";
       }
     }
 
     function addOrUpdate() {
       const term = document.getElementById("term").value.trim();
       const def = document.getElementById("definition").value.trim();
-      if (!term || !def) return alert("Заполните оба поля");
+      if (!term || !def) return alert("Заполните оба поля!");
 
       glossary.doc(term).set({
         definition: def,
@@ -84,12 +87,10 @@
         document.getElementById("term").value = "";
         document.getElementById("definition").value = "";
       })
-      .catch(e => alert("Ошибка: " + e.message));
+      .catch(e => {
+        document.getElementById("error").textContent = "Ошибка: " + e.message;
+      });
     }
-
-    function toggleTheme() { /* тот же код */ }
-
-    if (localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
   </script>
 </body>
 </html>
