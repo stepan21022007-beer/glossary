@@ -9,8 +9,83 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
-    /* Тот же стиль, что выше в index.html — копируй из предыдущего файла полностью */
-    /* Добавляем только для карточек */
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --danger: #ef4444;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --text-light: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.4s, color 0.4s;
+    }
+    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
+    nav {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin: 1.5rem 0 2rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--primary); }
+    .theme-toggle {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: color 0.2s, transform 0.2s;
+    }
+    .theme-toggle:hover { color: var(--primary); transform: scale(1.15); }
+    section {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    button {
+      padding: 0.9rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
     .term-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -36,11 +111,12 @@
     }
     .delete-btn {
       margin-top: 1rem;
-      background: #ef4444;
+      background: var(--danger);
       padding: 0.6rem 1.2rem;
       font-size: 0.9rem;
     }
     .delete-btn:hover { background: #dc2626; }
+    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
     .loading { text-align: center; color: var(--text-light); padding: 2rem 0; font-style: italic; }
   </style>
 </head>
@@ -69,7 +145,15 @@
   </div>
 
   <script>
-    const firebaseConfig = { /* копируй из index.html */ };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const glossary = db.collection("glossary");
@@ -118,9 +202,24 @@
         .catch(e => alert("Ошибка: " + e.message));
     }
 
-    function toggleTheme() { /* копируй из index.html */ }
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.querySelector('.theme-toggle i');
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        icon.className = 'fas fa-moon';
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        icon.className = 'fas fa-sun';
+      }
+    }
 
-    if (localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
+    }
 
     window.onload = showAll;
   </script>
