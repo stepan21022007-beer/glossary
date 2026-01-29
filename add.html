@@ -154,7 +154,7 @@
     const db = firebase.firestore();
     const glossary = db.collection("glossary");
 
-    const PASSWORD = "bm2315"; // ← измени на свой
+    const PASSWORD = "bm2315"; // ← твой пароль, измени на свой
 
     function checkPassword() {
       const pass = document.getElementById("password").value;
@@ -174,7 +174,10 @@
     function addOrUpdate() {
       const term = document.getElementById("term").value.trim();
       const def = document.getElementById("definition").value.trim();
-      if (!term || !def) return alert("Заполните оба поля");
+      if (!term || !def) {
+        document.getElementById("error").textContent = "Заполните оба поля!";
+        return;
+      }
 
       glossary.doc(term).set({
         definition: def,
