@@ -3,99 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Глоссарий — Добавить / изменить термин</title>
+  <title>Глоссарий — Все термины</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
     h1 { text-align: center; color: #333; }
     section { margin: 30px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: white; }
-    input, textarea { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border: 1px solid #aaa; border-radius: 4px; }
-    button { padding: 10px 20px; font-size: 16px; margin: 8px 0 0 0; cursor: pointer; border: none; border-radius: 4px; color: white; background: #28a745; }
+    button { padding: 10px 20px; font-size: 16px; margin: 8px 0 0 0; cursor: pointer; border: none; border-radius: 4px; color: white; background: #6f42c1; }
+    .term-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+    .term-item h3 { margin: 0 15px 8px 0; display: inline-block; color: #0056b3; }
+    .delete-btn { background: #dc3545; padding: 6px 12px; font-size: 14px; color: white; border: none; cursor: pointer; border-radius: 4px; }
+    #allTerms { margin-top: 20px; line-height: 1.6; }
+    #status { color: #555; font-style: italic; margin: 10px 0; }
     nav { text-align: center; margin: 20px 0; }
     nav a { margin: 0 10px; color: #0056b3; text-decoration: none; }
-    #error { color: red; font-weight: bold; margin: 15px 0; }
-    #passwordForm { text-align: center; }
-    #addForm { display: none; }
+    #error { color: red; font-weight: bold; margin: 15px 0; padding: 10px; background: #ffebee; border-radius: 4px; }
   </style>
 </head>
 <body>
 
-  <h1>Глоссарий — Добавить / изменить термин</h1>
+  <h1>Глоссарий — Все термины по алфавиту</h1>
 
   <nav>
     <a href="./index.html">Поиск</a>
-    <a href="./all.html">Все термины</a>
+    <a href="./add.html">Добавить термин</a>
   </nav>
 
-  <section id="passwordForm">
-    <p>Введите пароль для доступа:</p>
-    <input type="password" id="password" placeholder="Пароль..." />
-    <button onclick="checkPassword()">Войти</button>
-  </section>
-
-  <section id="addForm">
-    <input id="term" placeholder="Термин (обязательно)" />
-    <textarea id="definition" rows="5" placeholder="Определение..."></textarea>
-    <button onclick="addOrUpdate()">Сохранить</button>
+  <section>
+    <button onclick="showAll()">Показать / обновить список</button>
+    <div id="status">Нажмите кнопку, чтобы загрузить термины</div>
+    <div id="allTerms"></div>
   </section>
 
   <div id="error"></div>
 
   <script>
+    // Конфиг Firebase (убедись, что он точно такой же, как в других файлах)
     const firebaseConfig = {
       apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
       authDomain: "my-glossary-55f58.firebaseapp.com",
       projectId: "my-glossary-55f58",
       storageBucket: "my-glossary-55f58.firebasestorage.app",
       messagingSenderId: "875015503393",
-      appId: "1:875015503393:web:e8b19a0213be249275ad60"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const glossary = db.collection("glossary");
-    const errorDiv = document.getElementById("error");
-
-    // Пароль по умолчанию (измени здесь на свой)
-    const PASSWORD = "bm2315";
-
-    function checkPassword() {
-      const pass = document.getElementById("password").value;
-      if (pass === PASSWORD) {
-        document.getElementById("passwordForm").style.display = "none";
-        document.getElementById("addForm").style.display = "block";
-      } else {
-        alert("Неверный пароль!");
-      }
-    }
-
-    function addOrUpdate() {
-      errorDiv.textContent = "";
-      let term = document.getElementById("term").value.trim();
-      let def = document.getElementById("definition").value.trim();
-
-      term = term.replace(/[\u200B-\u200D\uFEFF]/g, '');
-      def = def.replace(/[\u200B-\u200D\uFEFF]/g, '');
-
-      if (!term || !def) {
-        alert("Заполните оба поля!");
-        return;
-      }
-
-      glossary.doc(term).set({
-        definition: def,
-        updated: firebase.firestore.FieldValue.serverTimestamp()
-      })
-      .then(() => {
-        alert("Термин сохранён!");
-        document.getElementById("term").value = "";
-        document.getElementById("definition").value = "";
-      })
-      .catch(e => {
-        errorDiv.textContent = "Ошибка сохранения: " + e.message;
-      });
-    }
-  </script>
-</body>
-</html>
+      appId: "1:875015503393:web:e8b19
