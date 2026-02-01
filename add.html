@@ -6,6 +6,8 @@
   <title>Глоссарий — Добавить термин</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
       --bg: #0f172a;
@@ -155,13 +157,18 @@
 
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-  authDomain: "my-glossary-55f58.firebaseapp.com",
-  projectId: "my-glossary-55f58",
-  storageBucket: "my-glossary-55f58.firebasestorage.app",
-  messagingSenderId: "875015503393",
-  appId: "1:875015503393:web:e8b19a0213be249275ad60"
-};
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
+
     const PASSWORD = "bm2315";
 
     function checkPassword() {
@@ -205,7 +212,7 @@
         return;
       }
 
-      let photoUrl = "";
+      let photoUrl = null;
       if (photoFile) {
         const img = await new Promise(resolve => {
           const image = new Image();
@@ -218,31 +225,33 @@
         canvas.height = img.height / 3.5 * 0.85;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        photoUrl = canvas.toDataURL("image/jpeg", 0.65);
+        photoUrl = canvas.toDataURL("image/jpeg", 0.60);
       }
 
-      let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
-
-      const existing = terms.find(t => t.term === term);
-      if (existing) {
-        existing.definition = def;
-        if (photoUrl) {
-          existing.photos = existing.photos || [];
-          existing.photos.push(photoUrl);
+      try {
+        const docRef = glossary.doc(term);
+        const doc = await docRef.get();
+        let photos = [];
+        if (doc.exists) {
+          photos = doc.data().photos || [];
         }
-      } else {
-        const newTerm = { term, definition: def };
-        if (photoUrl) newTerm.photos = [photoUrl];
-        terms.push(newTerm);
-      }
+        if (photoUrl) photos.push(photoUrl);
 
-      localStorage.setItem("glossary", JSON.stringify(terms));
-      alert("Термин сохранён!");
-      document.getElementById("term").value = "";
-      document.getElementById("definition").value = "";
-      document.getElementById("photo").value = "";
-      document.getElementById("preview-container").innerHTML = "";
-      error.textContent = "";
+        await docRef.set({
+          definition: def,
+          photos: photos,
+          updated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Термин сохранён/обновлён!");
+        document.getElementById("term").value = "";
+        document.getElementById("definition").value = "";
+        document.getElementById("photo").value = "";
+        document.getElementById("preview-container").innerHTML = "";
+        error.textContent = "";
+      } catch (e) {
+        error.textContent = "Ошибка: " + e.message;
+      }
     }
 
     function toggleTheme() {
