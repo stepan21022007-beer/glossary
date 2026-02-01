@@ -104,7 +104,7 @@
   </div>
 
   <script>
-    const PASSWORD = "bm2315"; // ← тот же пароль, что в add.html
+    const PASSWORD = "bm2315"; // ← тот же пароль, что в add.html (измени, если нужно)
 
     let currentEditTerm = null;
 
@@ -135,12 +135,21 @@
           html += '</div>';
         }
         html += `
-          <button class="edit-btn" onclick="openEditModal('${item.term.replace(/'/g, "\\'")}')">Изменить</button>
+          <button class="edit-btn" onclick="requestPasswordToEdit('${item.term.replace(/'/g, "\\'")}')">Изменить</button>
           <button class="delete-btn" onclick="requestPasswordToDelete('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
         `;
         div.innerHTML = html;
         container.appendChild(div);
       });
+    }
+
+    function requestPasswordToEdit(term) {
+      const password = prompt("Введите пароль для изменения:");
+      if (password === PASSWORD) {
+        openEditModal(term);
+      } else if (password !== null) {
+        alert("Неверный пароль!");
+      }
     }
 
     function openEditModal(term) {
@@ -225,7 +234,7 @@
 
     function requestPasswordToDelete(term) {
       const password = prompt("Введите пароль для удаления:");
-      if (password === "bm2315") {
+      if (password === PASSWORD) {
         deleteTerm(term);
       } else if (password !== null) {
         alert("Неверный пароль!");
