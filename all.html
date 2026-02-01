@@ -50,6 +50,7 @@
       background: rgba(0,0,0,0.5);
       justify-content: center;
       align-items: center;
+      z-index: 1000;
     }
     .modal-content {
       background: white;
@@ -57,15 +58,19 @@
       border-radius: 12px;
       width: 90%;
       max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
     .close-btn {
       float: right;
-      font-size: 24px;
+      font-size: 28px;
       cursor: pointer;
       color: #aaa;
     }
     .close-btn:hover { color: #000; }
+    #editPreview-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+    .edit-preview-img { max-width: 150px; border-radius: 8px; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
@@ -82,23 +87,25 @@
     <div id="allTerms"></div>
   </section>
 
-  <!-- Модальное окно для редактирования -->
+  <!-- Модальное окно редактирования -->
   <div id="editModal">
     <div class="modal-content">
-      <span class="close-btn" onclick="closeEditModal()">&times;</span>
-      <h2>Редактировать термин</h2>
-      <input id="editTerm" placeholder="Термин" readonly style="background:#eee;" />
+      <span class="close-btn" onclick="closeEditModal()">×</span>
+      <h2>Изменить термин</h2>
+      <input id="editTerm" readonly style="background:#eee; width:100%; padding:10px; margin:10px 0;" />
       <textarea id="editDefinition" rows="6" placeholder="Определение..."></textarea>
       
-      <label>Добавить фото:</label>
+      <label>Добавить фото (по одному):</label>
       <input type="file" id="editPhoto" accept="image/*" />
-      <div id="editPreview"></div>
+      <div id="editPreview-container"></div>
 
       <button onclick="saveEdit()">Сохранить изменения</button>
     </div>
   </div>
 
   <script>
+    const PASSWORD = "bm2315"; // ← тот же пароль, что в add.html
+
     let currentEditTerm = null;
 
     function showAll() {
@@ -145,15 +152,15 @@
 
       document.getElementById("editTerm").value = term;
       document.getElementById("editDefinition").value = found.definition;
-      document.getElementById("editPreview").innerHTML = "";
+      const previewContainer = document.getElementById("editPreview-container");
+      previewContainer.innerHTML = "";
 
       if (found.photos && found.photos.length > 0) {
         found.photos.forEach(p => {
           const img = document.createElement("img");
           img.src = p;
-          img.style.maxWidth = "150px";
-          img.style.margin = "5px";
-          document.getElementById("editPreview").appendChild(img);
+          img.className = "edit-preview-img";
+          previewContainer.appendChild(img);
         });
       }
 
@@ -163,60 +170,62 @@
     function closeEditModal() {
       document.getElementById("editModal").style.display = "none";
       currentEditTerm = null;
+      document.getElementById("editPreview-container").innerHTML = "";
+      document.getElementById("editPhoto").value = "";
     }
 
-    function saveEdit() {
+    async function saveEdit() {
       const term = currentEditTerm;
       const newDef = document.getElementById("editDefinition").value.trim();
       const newPhotoFile = document.getElementById("editPhoto").files[0];
-      const error = document.getElementById("error");
 
       if (!newDef) {
-        error.textContent = "Заполните определение!";
+        alert("Заполните определение!");
         return;
       }
 
       let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
 
+      let newPhoto = null;
+      if (newPhotoFile) {
+        newPhoto = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+              const canvas = document.createElement("canvas");
+              canvas.width = img.width / 3.5 * 0.85;
+              canvas.height = img.height / 3.5 * 0.85;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL("image/jpeg", 0.60));
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(newPhotoFile);
+        });
+      }
+
       terms = terms.map(t => {
         if (t.term === term) {
           t.definition = newDef;
-          if (newPhotoFile) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              const img = new Image();
-              img.onload = function() {
-                const canvas = document.createElement("canvas");
-                canvas.width = img.width / 3.5 * 0.85;
-                canvas.height = img.height / 3.5 * 0.85;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const compressed = canvas.toDataURL("image/jpeg", 0.60);
-                t.photos = t.photos || [];
-                t.photos.push(compressed);
-                saveAndUpdate(t);
-              };
-              img.src = e.target.result;
-            };
-            reader.readAsDataURL(newPhotoFile);
-            return t; // временно, пока асинхронно
+          if (newPhoto) {
+            t.photos = t.photos || [];
+            t.photos.push(newPhoto);
           }
-          saveAndUpdate(t);
         }
         return t;
       });
 
-      function saveAndUpdate(t) {
-        localStorage.setItem("glossary", JSON.stringify(terms));
-        alert("Изменения сохранены!");
-        closeEditModal();
-        showAll();
-      }
+      localStorage.setItem("glossary", JSON.stringify(terms));
+      alert("Изменения сохранены!");
+      closeEditModal();
+      showAll();
     }
 
     function requestPasswordToDelete(term) {
       const password = prompt("Введите пароль для удаления:");
-      if (password === "bm2315") { // ← твой пароль
+      if (password === "bm2315") {
         deleteTerm(term);
       } else if (password !== null) {
         alert("Неверный пароль!");
