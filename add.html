@@ -4,21 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Глоссарий — Добавить термин</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
-    h1 { text-align: center; color: #333; }
+    h1 { text-align: center; }
     section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: white; }
-    input, textarea { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border: 1px solid #aaa; border-radius: 6px; }
-    button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #218838; }
+    input, textarea { width: 100%; padding: 10px; margin: 10px 0; }
+    button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; }
     #preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
-    .preview-img { max-width: 150px; border-radius: 8px; border: 1px solid #ddd; }
+    .preview-img { max-width: 150px; border-radius: 8px; }
     #error { color: red; margin: 10px 0; }
   </style>
 </head>
 <body>
 
-  <h1>Добавить / изменить термин</h1>
+  <h1>Добавить термин</h1>
 
   <nav style="text-align:center; margin:20px 0;">
     <a href="index.html">Поиск</a> | 
@@ -39,10 +40,25 @@
   <div id="error"></div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
+
+    const PASSWORD = "bm2315";
+
     // Предпросмотр нескольких фото
     document.getElementById("photos").addEventListener("change", function(e) {
       const container = document.getElementById("preview-container");
-      container.innerHTML = ""; // очищаем предыдущие предпросмотры
+      container.innerHTML = "";
 
       Array.from(e.target.files).forEach(file => {
         const reader = new FileReader();
@@ -69,42 +85,41 @@
 
       const photos = [];
 
-      // Сжимаем каждое фото в 3.5 раза
       for (const file of photoFiles) {
-        const img = await new Promise(resolve => {
-          const image = new Image();
-          image.onload = () => resolve(image);
-          image.src = URL.createObjectURL(file);
+        const base64 = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+        photos.push(base64);
+      }
+
+      try {
+        await glossary.doc(term).set({
+          definition: def,
+          photos: photos,
+          updated: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width / 3.5;
-        canvas.height = img.height / 3.5;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        const compressed = canvas.toDataURL("image/jpeg", 0.65); // 65% качества
-        photos.push(compressed);
+        alert("Термин сохранён!");
+        document.getElementById("term").value = "";
+        document.getElementById("definition").value = "";
+        document.getElementById("photos").value = "";
+        document.getElementById("preview-container").innerHTML = "";
+        error.textContent = "";
+      } catch (e) {
+        error.textContent = "Ошибка: " + e.message;
       }
+    }
 
-      // Сохраняем в localStorage
-      let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
-
-      const existing = terms.find(t => t.term === term);
-      if (existing) {
-        existing.definition = def;
-        existing.photos = photos; // массив фото
+    function checkPassword() {
+      const pass = document.getElementById("password").value;
+      if (pass === PASSWORD) {
+        document.getElementById("passwordForm").style.display = "none";
+        document.getElementById("addForm").style.display = "block";
       } else {
-        terms.push({ term, definition: def, photos });
+        alert("Неверный пароль!");
       }
-
-      localStorage.setItem("glossary", JSON.stringify(terms));
-      alert(`Термин сохранён! Фото: ${photos.length} шт (сжаты в 3.5 раза)`);
-      document.getElementById("term").value = "";
-      document.getElementById("definition").value = "";
-      document.getElementById("photos").value = "";
-      document.getElementById("preview-container").innerHTML = "";
-      error.textContent = "";
     }
   </script>
 </body>
