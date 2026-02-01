@@ -167,6 +167,14 @@
     #editPreview-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
     .edit-preview-img { max-width: 180px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
+    #status {
+      text-align: center;
+      color: var(--text-light);
+      padding: 1.5rem 0;
+      font-size: 1.2rem;
+      font-style: italic;
+      min-height: 50px;
+    }
   </style>
 </head>
 <body>
@@ -186,6 +194,7 @@
 
     <section>
       <button onclick="showAll()">Обновить список</button>
+      <div id="status">Нажмите «Обновить список», чтобы загрузить термины</div>
       <div id="allTerms"></div>
     </section>
 
@@ -209,18 +218,29 @@
   </div>
 
   <script>
-    const PASSWORD = "bm2315"; // ← твой пароль
+    const PASSWORD = "bm2315";
 
     let currentEditTerm = null;
 
     function showAll() {
-      document.getElementById("error").textContent = "";
-      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+      const status = document.getElementById("status");
+      const errorDiv = document.getElementById("error");
       const container = document.getElementById("allTerms");
+
+      if (!status) {
+        console.error("Элемент #status не найден!");
+        return;
+      }
+
+      status.textContent = "Загрузка терминов...";
+      errorDiv.textContent = "";
       container.innerHTML = "";
 
+      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+
       if (terms.length === 0) {
-        container.innerHTML = "<p style='text-align:center;color:var(--text-light);'>Пока нет терминов</p>";
+        container.innerHTML = "<p style='text-align:center;color:var(--text-light);font-size:1.2rem;'>Пока нет терминов. Добавьте на странице «Добавить термин».</p>";
+        status.textContent = "Глоссарий пуст";
         return;
       }
 
@@ -245,6 +265,8 @@
         div.innerHTML = html;
         container.appendChild(div);
       });
+
+      status.textContent = `Найдено терминов: ${terms.length}`;
     }
 
     function requestPasswordToEdit(term) {
@@ -372,7 +394,9 @@
       document.querySelector('.theme-toggle i').className = 'fas fa-sun';
     }
 
-    window.onload = showAll;
+    window.onload = function() {
+      showAll();
+    };
   </script>
 </body>
 </html>
