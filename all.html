@@ -1,72 +1,182 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Глоссарий — Все термины</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
-    h1 { text-align: center; color: #333; }
-    nav { text-align: center; margin: 20px 0; }
-    nav a { margin: 0 15px; color: #0056b3; text-decoration: none; font-weight: bold; }
-    section { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    button { padding: 10px 20px; background: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #5a32a3; }
-    .term-item {
-      margin: 20px 0;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      border: 1px solid #ddd;
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --danger: #ef4444;
     }
-    .term-title { color: #0056b3; margin-bottom: 10px; font-size: 1.3rem; }
-    .term-def { line-height: 1.6; margin-bottom: 10px; }
-    .photos img { max-width: 200px; margin: 5px; border-radius: 8px; }
-    .delete-btn {
-      margin-top: 10px;
-      background: #dc3545;
-      color: white;
-      padding: 8px 16px;
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --text-light: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.4s, color 0.4s;
+    }
+    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
+    nav {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin: 1.5rem 0 2rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--primary); }
+    .theme-toggle {
+      background: none;
       border: none;
-      border-radius: 6px;
+      font-size: 1.5rem;
       cursor: pointer;
+      color: var(--text-light);
+      transition: color 0.2s, transform 0.2s;
     }
-    .delete-btn:hover { background: #c82333; }
+    .theme-toggle:hover { color: var(--primary); transform: scale(1.15); }
+    section {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    button {
+      padding: 0.9rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .term-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    .term-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+    .term-title {
+      margin: 0 0 0.8rem;
+      color: var(--primary);
+      font-size: 1.35rem;
+      font-weight: 600;
+    }
+    .term-def {
+      margin: 0 0 1rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+    .photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+    .photos img {
+      max-width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .delete-btn {
+      margin-top: 1rem;
+      background: var(--danger);
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+    }
+    .delete-btn:hover { background: #dc2626; }
+    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
+    .loading { text-align: center; color: var(--text-light); padding: 2rem 0; font-style: italic; }
   </style>
 </head>
 <body>
 
-  <h1>Глоссарий — Все термины</h1>
+  <div class="container">
+    <header>
+      <h1>Все термины</h1>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+      </button>
+    </header>
 
-  <nav>
-    <a href="index.html">Поиск</a>
-    <a href="add.html">Добавить термин</a>
-  </nav>
+    <nav>
+      <a href="./index.html">Поиск</a>
+      <a href="./add.html">Добавить термин</a>
+    </nav>
 
-  <section>
-    <button onclick="showAll()">Обновить список</button>
-    <div id="allTerms"></div>
-  </section>
+    <section>
+      <button onclick="showAll()">Обновить список</button>
+      <div id="status" class="loading">Нажмите кнопку, чтобы загрузить</div>
+      <div id="allTerms"></div>
+    </section>
+
+    <div id="error"></div>
+  </div>
 
   <script>
     function showAll() {
+      document.getElementById("error").textContent = "";
+      document.getElementById("status").textContent = "Загрузка...";
+
       const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+
       const container = document.getElementById("allTerms");
       container.innerHTML = "";
 
       if (terms.length === 0) {
-        container.innerHTML = "<p style='text-align:center;'>Пока нет терминов. Добавьте на странице «Добавить термин».</p>";
+        container.innerHTML = "<p style='text-align:center;color:var(--text-light);'>Пока нет терминов</p>";
+        document.getElementById("status").textContent = "";
         return;
       }
 
       terms.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
 
       terms.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "term-item";
+        const card = document.createElement("div");
+        card.className = "term-card";
         let html = `
-          <div class="term-title">${item.term}</div>
-          <div class="term-def">${item.definition.replace(/\n/g, "<br>")}</div>
+          <h3 class="term-title">${item.term}</h3>
+          <p class="term-def">${item.definition.replace(/\n/g, "<br>")}</p>
         `;
         if (item.photos && item.photos.length > 0) {
           html += '<div class="photos">';
@@ -78,19 +188,40 @@
         html += `
           <button class="delete-btn" onclick="deleteTerm('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
         `;
-        div.innerHTML = html;
-        container.appendChild(div);
+        card.innerHTML = html;
+        container.appendChild(card);
       });
+
+      document.getElementById("status").textContent = `Найдено: ${terms.length}`;
     }
 
     function deleteTerm(term) {
-      if (!confirm(`Удалить термин "${term}"?`)) return;
+      if (!confirm(`Удалить "${term}"?`)) return;
 
       let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
       terms = terms.filter(t => t.term !== term);
       localStorage.setItem("glossary", JSON.stringify(terms));
       showAll();
       alert("Термин удалён");
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.querySelector('.theme-toggle i');
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        icon.className = 'fas fa-moon';
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        icon.className = 'fas fa-sun';
+      }
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
     }
 
     window.onload = showAll;
