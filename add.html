@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,21 +8,24 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --text-light: #64748b;
-      --border: #e2e8f0;
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --danger: #ef4444;
-    }
-    [data-theme="dark"] {
       --bg: #0f172a;
       --card: #1e293b;
       --text: #e2e8f0;
       --text-light: #94a3b8;
       --border: #334155;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --danger: #ef4444;
+      --warning: #ffc107;
+      --shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -30,7 +33,7 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      transition: background 0.4s, color 0.4s;
+      transition: background 0.5s ease, color 0.5s ease;
     }
     .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
     header {
@@ -40,82 +43,79 @@
       padding: 1.5rem 0;
       border-bottom: 1px solid var(--border);
     }
-    h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
+    h1 { font-size: 2.2rem; font-weight: 800; margin: 0; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     nav {
       display: flex;
-      gap: 1.5rem;
+      gap: 2rem;
       justify-content: center;
-      margin: 1.5rem 0 2rem;
+      margin: 2rem 0;
       flex-wrap: wrap;
     }
     nav a {
       color: var(--text-light);
       text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      transition: all 0.3s;
+      background: rgba(99,102,241,0.1);
     }
-    nav a:hover { color: var(--primary); }
+    nav a:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-3px);
+    }
     .theme-toggle {
       background: none;
       border: none;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       cursor: pointer;
       color: var(--text-light);
-      transition: color 0.2s, transform 0.2s;
+      transition: all 0.3s;
     }
-    .theme-toggle:hover { color: var(--primary); transform: scale(1.15); }
+    .theme-toggle:hover { color: var(--primary); transform: rotate(20deg) scale(1.2); }
     section {
       background: var(--card);
-      border-radius: 12px;
-      padding: 2rem;
-      margin: 1.5rem 0;
+      border-radius: 16px;
+      padding: 2.5rem;
+      margin: 2rem 0;
       border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      box-shadow: var(--shadow);
+      transition: all 0.4s ease;
     }
-    .password-section {
-      max-width: 500px;
-      margin: 4rem auto;
-      text-align: center;
-    }
+    section:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
     input, textarea {
       width: 100%;
-      padding: 0.9rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
+      padding: 1rem;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 1.1rem;
       background: var(--bg);
       color: var(--text);
       margin: 0.8rem 0;
+      transition: all 0.3s;
     }
     input:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+      box-shadow: 0 0 0 4px rgba(99,102,241,0.2);
     }
     button {
-      padding: 0.9rem 1.8rem;
-      font-size: 1rem;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
       font-weight: 600;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       background: var(--primary);
       color: white;
-      transition: background 0.2s, transform 0.1s;
+      transition: all 0.3s;
     }
-    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    #preview-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 1rem 0;
-    }
-    .preview-img {
-      max-width: 200px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
+    button:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    #preview-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
+    .preview-img { max-width: 200px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
   </style>
 </head>
 <body>
@@ -133,7 +133,7 @@
       <a href="./all.html">Все термины</a>
     </nav>
 
-    <section class="password-section" id="passwordForm">
+    <section id="passwordForm">
       <h3>Введите пароль</h3>
       <input type="password" id="password" placeholder="Пароль..." />
       <button onclick="checkPassword()">Войти</button>
@@ -144,8 +144,8 @@
       <input id="term" placeholder="Термин (обязательно)" />
       <textarea id="definition" rows="6" placeholder="Определение..."></textarea>
       
-      <label style="display:block; margin:1rem 0 0.5rem; font-weight:500;">Фото (можно несколько)</label>
-      <input type="file" id="photos" accept="image/*" multiple />
+      <label style="display:block; margin:1.2rem 0 0.6rem; font-weight:600;">Добавить фото:</label>
+      <input type="file" id="photo" accept="image/*" />
       <div id="preview-container"></div>
 
       <button onclick="addOrUpdate()">Сохранить</button>
@@ -153,7 +153,7 @@
   </div>
 
   <script>
-    const PASSWORD = "bm2315"; // ← измени на свой
+    const PASSWORD = "bm2315";
 
     function checkPassword() {
       const pass = document.getElementById("password").value;
@@ -170,27 +170,25 @@
       }
     }
 
-    // Предпросмотр нескольких фото
-    document.getElementById("photos").addEventListener("change", function(e) {
-      const container = document.getElementById("preview-container");
-      container.innerHTML = "";
-
-      Array.from(e.target.files).forEach(file => {
+    document.getElementById("photo").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
           const img = document.createElement("img");
           img.src = e.target.result;
-          img.className = "preview-img";
-          container.appendChild(img);
+          img.style.maxWidth = "200px";
+          img.style.borderRadius = "12px";
+          document.getElementById("preview-container").appendChild(img);
         };
         reader.readAsDataURL(file);
-      });
+      }
     });
 
     async function addOrUpdate() {
       const term = document.getElementById("term").value.trim();
       const def = document.getElementById("definition").value.trim();
-      const photoFiles = document.getElementById("photos").files;
+      const photoFile = document.getElementById("photo").files[0];
       const error = document.getElementById("error");
 
       if (!term || !def) {
@@ -198,23 +196,20 @@
         return;
       }
 
-      const photos = [];
-
-      for (const file of photoFiles) {
+      let photoUrl = "";
+      if (photoFile) {
         const img = await new Promise(resolve => {
           const image = new Image();
           image.onload = () => resolve(image);
-          image.src = URL.createObjectURL(file);
+          image.src = URL.createObjectURL(photoFile);
         });
 
         const canvas = document.createElement("canvas");
-        canvas.width = img.width / 3.5;
-        canvas.height = img.height / 3.5;
+        canvas.width = img.width / 3.5 * 0.85;
+        canvas.height = img.height / 3.5 * 0.85;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        const compressed = canvas.toDataURL("image/jpeg", 0.65);
-        photos.push(compressed);
+        photoUrl = canvas.toDataURL("image/jpeg", 0.65);
       }
 
       let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
@@ -222,16 +217,21 @@
       const existing = terms.find(t => t.term === term);
       if (existing) {
         existing.definition = def;
-        existing.photos = photos;
+        if (photoUrl) {
+          existing.photos = existing.photos || [];
+          existing.photos.push(photoUrl);
+        }
       } else {
-        terms.push({ term, definition: def, photos });
+        const newTerm = { term, definition: def };
+        if (photoUrl) newTerm.photos = [photoUrl];
+        terms.push(newTerm);
       }
 
       localStorage.setItem("glossary", JSON.stringify(terms));
-      alert(`Термин сохранён! Фото: ${photos.length} шт (сжаты в 3.5 раза)`);
+      alert("Термин сохранён!");
       document.getElementById("term").value = "";
       document.getElementById("definition").value = "";
-      document.getElementById("photos").value = "";
+      document.getElementById("photo").value = "";
       document.getElementById("preview-container").innerHTML = "";
       error.textContent = "";
     }
