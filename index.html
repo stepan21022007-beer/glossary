@@ -1,201 +1,60 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Глоссарий — Поиск</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --text-light: #64748b;
-      --border: #e2e8f0;
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --danger: #ef4444;
-    }
-    [data-theme="dark"] {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #e2e8f0;
-      --text-light: #94a3b8;
-      --border: #334155;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      transition: background 0.4s, color 0.4s;
-    }
-    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-    h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
-    nav {
-      display: flex;
-      gap: 1.5rem;
-      justify-content: center;
-      margin: 1.5rem 0 2rem;
-      flex-wrap: wrap;
-    }
-    nav a {
-      color: var(--text-light);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    nav a:hover { color: var(--primary); }
-    .theme-toggle {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-light);
-      transition: color 0.2s, transform 0.2s;
-    }
-    .theme-toggle:hover { color: var(--primary); transform: scale(1.15); }
-    section {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 2rem;
-      margin: 1.5rem 0;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-    input {
-      width: 100%;
-      padding: 0.9rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0.8rem 0;
-    }
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-    }
-    button {
-      padding: 0.9rem 1.8rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      transition: background 0.2s, transform 0.1s;
-    }
-    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    #result {
-      margin-top: 1.5rem;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.5rem;
-      display: none;
-    }
-    .term-title { margin: 0 0 0.8rem; color: var(--primary); font-size: 1.35rem; }
-    .term-def { margin: 0; color: var(--text-light); line-height: 1.7; }
-    #error { color: var(--danger); margin-top: 1rem; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 8px; }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+    h1 { text-align: center; color: #333; }
+    nav { text-align: center; margin: 20px 0; }
+    nav a { margin: 0 15px; color: #0056b3; text-decoration: none; font-weight: bold; }
+    section { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    input { width: 100%; padding: 12px; margin: 10px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
+    button { padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #0056b3; }
+    #result { margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 8px; }
+    #error { color: red; margin-top: 10px; }
+    img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Глоссарий</h1>
-      <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
-        <i class="fas fa-moon"></i>
-      </button>
-    </header>
+  <h1>Глоссарий — Поиск по термину</h1>
 
-    <nav>
-      <a href="./all.html">Все термины</a>
-      <a href="./add.html">Добавить термин</a>
-    </nav>
+  <nav>
+    <a href="all.html">Все термины</a>
+    <a href="add.html">Добавить термин</a>
+  </nav>
 
-    <section>
-      <input id="searchTerm" placeholder="Введите термин..." />
-      <button onclick="search()">Найти</button>
-      <div id="result">
-        <h3 class="term-title" id="result-term"></h3>
-        <p class="term-def" id="result-def"></p>
-      </div>
-    </section>
+  <section>
+    <input id="searchTerm" placeholder="Введите термин..." />
+    <button onclick="search()">Найти</button>
+    <div id="result"></div>
+  </section>
 
-    <div id="error"></div>
-  </div>
+  <div id="error"></div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-      authDomain: "my-glossary-55f58.firebaseapp.com",
-      projectId: "my-glossary-55f58",
-      storageBucket: "my-glossary-55f58.firebasestorage.app",
-      messagingSenderId: "875015503393",
-      appId: "1:875015503393:web:e8b19a0213be249275ad60"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const glossary = db.collection("glossary");
-
     function search() {
-      const term = document.getElementById("searchTerm").value.trim();
+      const term = document.getElementById("searchTerm").value.trim().toLowerCase();
       if (!term) return alert("Введите термин");
 
-      glossary.doc(term).get()
-        .then(doc => {
-          const result = document.getElementById("result");
-          const error = document.getElementById("error");
-          error.textContent = "";
-          if (doc.exists) {
-            const data = doc.data();
-            document.getElementById("result-term").textContent = term;
-            document.getElementById("result-def").innerHTML = data.definition.replace(/\n/g, "<br>");
-            result.style.display = "block";
-          } else {
-            error.textContent = "Термин не найден";
-            result.style.display = "none";
-          }
-        })
-        .catch(e => {
-          document.getElementById("error").textContent = "Ошибка: " + e.message;
-        });
-    }
+      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+      const found = terms.find(t => t.term.toLowerCase() === term);
 
-    function toggleTheme() {
-      const body = document.body;
-      const icon = document.querySelector('.theme-toggle i');
-      if (body.getAttribute('data-theme') === 'dark') {
-        body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        icon.className = 'fas fa-moon';
+      const result = document.getElementById("result");
+      const error = document.getElementById("error");
+      error.textContent = "";
+
+      if (found) {
+        let html = `<strong>${found.term}</strong><br>${found.definition.replace(/\n/g, "<br>")}`;
+        if (found.photo) html += `<br><img src="${found.photo}" alt="${found.term}">`;
+        result.innerHTML = html;
       } else {
-        body.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        icon.className = 'fas fa-sun';
+        error.textContent = "Термин не найден";
+        result.innerHTML = "";
       }
-    }
-
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.setAttribute('data-theme', 'dark');
-      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
     }
   </script>
 </body>
