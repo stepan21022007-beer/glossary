@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Глоссарий — Поиск</title>
+  <title>Глоссарий — Все термины</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
       --bg: #0f172a;
@@ -90,110 +92,349 @@
       margin: 2rem 0;
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
-      transition: all 0.4s ease;
     }
-    section:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-    input {
-      width: 100%;
-      padding: 1rem;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      font-size: 1.1rem;
-      background: var(--bg);
-      color: var(--text);
-      transition: all 0.3s;
-    }
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(99,102,241,0.2);
-    }
-    button {
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       padding: 1rem 2rem;
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: 700;
       border: none;
-      border-radius: 12px;
+      border-radius: 50px;
       cursor: pointer;
-      background: var(--primary);
+      background: var(--gradient);
       color: white;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+      margin-bottom: 1.5rem;
     }
-    button:hover { background: var(--primary-dark); transform: translateY(-2px); }
-    #result {
-      margin-top: 2rem;
+    .refresh-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 12px 30px rgba(99,102,241,0.5);
+    }
+    .refresh-btn i {
+      transition: transform 0.4s ease;
+    }
+    .refresh-btn:hover i {
+      transform: rotate(180deg);
+    }
+    .term-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      display: none;
-      animation: fadeIn 0.6s ease;
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.4s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-    .term-title { margin: 0 0 1rem; color: var(--primary); font-size: 1.8rem; font-weight: 800; }
-    .term-def { margin: 0; color: var(--text-light); line-height: 1.8; font-size: 1.1rem; }
-    .photos img { max-width: 100%; border-radius: 12px; margin: 1rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-    #error { color: var(--danger); margin-top: 1rem; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
+    .term-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+    .term-title {
+      margin: 0 0 1rem;
+      color: var(--primary);
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+    .term-def { margin: 0 0 1.2rem; color: var(--text-light); line-height: 1.8; font-size: 1.1rem; }
+    .photos { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
+    .photos img {
+      max-width: 220px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: transform 0.3s;
+    }
+    .photos img:hover { transform: scale(1.05); }
+    .actions { margin-top: 1.2rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .edit-btn {
+      background: var(--warning);
+      color: black;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+    .edit-btn:hover { background: #e0a800; }
+    .delete-btn {
+      background: var(--danger);
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+    .delete-btn:hover { background: #c82333; }
+    #editModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: var(--card);
+      padding: 2.5rem;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      animation: modalFade 0.4s ease;
+    }
+    @keyframes modalFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .close-btn {
+      float: right;
+      font-size: 2rem;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+    .close-btn:hover { color: var(--text); }
+    #editPreview-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
+    .edit-preview-img { max-width: 180px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
+    #status {
+      text-align: center;
+      color: var(--text-light);
+      padding: 1.5rem 0;
+      font-size: 1.2rem;
+      font-style: italic;
+      min-height: 50px;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
     <header>
-      <h1>Глоссарий</h1>
-      <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
+      <h1>Все термины</h1>
+      <button class="theme-toggle" onclick="toggleTheme()">
         <i class="fas fa-moon"></i>
       </button>
     </header>
 
     <nav>
-      <a href="all.html">Все термины</a>
-      <a href="add.html">Добавить термин</a>
+      <a href="./index.html">Поиск</a>
+      <a href="./add.html">Добавить термин</a>
     </nav>
 
     <section>
-      <input id="searchTerm" placeholder="Введите термин..." />
-      <button onclick="search()">Найти</button>
-      <div id="result"></div>
+      <button class="refresh-btn" onclick="showAll()">
+        <i class="fas fa-sync-alt"></i> Обновить
+      </button>
+      <div id="status">Нажмите «Обновить», чтобы загрузить термины</div>
+      <div id="allTerms"></div>
     </section>
+
+    <!-- Модальное окно редактирования -->
+    <div id="editModal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeEditModal()">×</span>
+        <h2>Изменить термин</h2>
+        <input id="editTerm" readonly style="background:#eee; width:100%; padding:12px; margin:12px 0; border-radius:8px;" />
+        <textarea id="editDefinition" rows="7" placeholder="Определение..."></textarea>
+        
+        <label style="display:block; margin:1.2rem 0 0.6rem; font-weight:600;">Добавить фото:</label>
+        <input type="file" id="editPhoto" accept="image/*" />
+        <div id="editPreview-container"></div>
+
+        <button onclick="saveEdit()">Сохранить изменения</button>
+      </div>
+    </div>
 
     <div id="error"></div>
   </div>
 
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-  authDomain: "my-glossary-55f58.firebaseapp.com",
-  projectId: "my-glossary-55f58",
-  storageBucket: "my-glossary-55f58.firebasestorage.app",
-  messagingSenderId: "875015503393",
-  appId: "1:875015503393:web:e8b19a0213be249275ad60"
-};
-    function search() {
-      const term = document.getElementById("searchTerm").value.trim();
-      if (!term) return alert("Введите термин");
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
 
-      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
-      const found = terms.find(t => t.term.toLowerCase() === term.toLowerCase());
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
 
-      const result = document.getElementById("result");
-      const error = document.getElementById("error");
-      error.textContent = "";
+    const PASSWORD = "bm2315";
 
-      if (found) {
-        let html = `<h3 class="term-title">${found.term}</h3>
-                    <p class="term-def">${found.definition.replace(/\n/g, "<br>")}</p>`;
-        if (found.photos && found.photos.length > 0) {
-          html += '<div class="photos">';
-          found.photos.forEach(p => html += `<img src="${p}" alt="${found.term}">`);
-          html += '</div>';
-        }
-        result.innerHTML = html;
-        result.style.display = "block";
-      } else {
-        error.textContent = "Термин не найден 😔";
-        result.style.display = "none";
+    let currentEditTerm = null;
+
+    function showAll() {
+      const status = document.getElementById("status");
+      const errorDiv = document.getElementById("error");
+      const container = document.getElementById("allTerms");
+
+      if (!status) {
+        console.error("Элемент #status не найден!");
+        return;
       }
+
+      status.textContent = "Загрузка терминов...";
+      errorDiv.textContent = "";
+      container.innerHTML = "";
+
+      glossary.get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            container.innerHTML = "<p style='text-align:center;color:var(--text-light);font-size:1.2rem;'>Пока нет терминов. Добавьте на странице «Добавить термин».</p>";
+            status.textContent = "Глоссарий пуст";
+            return;
+          }
+
+          const items = [];
+          snapshot.forEach(doc => {
+            items.push({ term: doc.id, def: doc.data().definition, photos: doc.data().photos || [] });
+          });
+
+          items.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
+
+          items.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "term-item";
+            let html = `
+              <h3 class="term-title">${item.term}</h3>
+              <p class="term-def">${item.def.replace(/\n/g, "<br>")}</p>
+            `;
+            if (item.photos.length > 0) {
+              html += '<div class="photos">';
+              item.photos.forEach(p => html += `<img src="${p}" alt="${item.term}">`);
+              html += '</div>';
+            }
+            html += `
+              <button class="edit-btn" onclick="requestPasswordToEdit('${item.term.replace(/'/g, "\\'")}')">Изменить</button>
+              <button class="delete-btn" onclick="requestPasswordToDelete('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
+            `;
+            div.innerHTML = html;
+            container.appendChild(div);
+          });
+
+          status.textContent = `Найдено терминов: ${items.length}`;
+        })
+        .catch(e => {
+          errorDiv.textContent = "Ошибка загрузки: " + e.message;
+          status.textContent = "Не удалось загрузить термины";
+        });
+    }
+
+    function requestPasswordToEdit(term) {
+      const password = prompt("Введите пароль для изменения:");
+      if (password === PASSWORD) {
+        openEditModal(term);
+      } else if (password !== null) {
+        alert("Неверный пароль!");
+      }
+    }
+
+    function openEditModal(term) {
+      glossary.doc(term).get()
+        .then(doc => {
+          if (!doc.exists) return alert("Термин не найден");
+
+          currentEditTerm = term;
+
+          document.getElementById("editTerm").value = term;
+          document.getElementById("editDefinition").value = doc.data().definition;
+          const previewContainer = document.getElementById("editPreview-container");
+          previewContainer.innerHTML = "";
+
+          const photos = doc.data().photos || [];
+          if (photos.length > 0) {
+            photos.forEach(p => {
+              const img = document.createElement("img");
+              img.src = p;
+              img.className = "edit-preview-img";
+              previewContainer.appendChild(img);
+            });
+          }
+
+          document.getElementById("editModal").style.display = "flex";
+        })
+        .catch(e => alert("Ошибка: " + e.message));
+    }
+
+    function closeEditModal() {
+      document.getElementById("editModal").style.display = "none";
+      currentEditTerm = null;
+      document.getElementById("editPreview-container").innerHTML = "";
+      document.getElementById("editPhoto").value = "";
+    }
+
+    async function saveEdit() {
+      const term = currentEditTerm;
+      const newDef = document.getElementById("editDefinition").value.trim();
+      const newPhotoFile = document.getElementById("editPhoto").files[0];
+
+      if (!newDef) {
+        alert("Заполните определение!");
+        return;
+      }
+
+      let newPhoto = null;
+      if (newPhotoFile) {
+        newPhoto = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+              const canvas = document.createElement("canvas");
+              canvas.width = img.width / 3.5 * 0.85;
+              canvas.height = img.height / 3.5 * 0.85;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL("image/jpeg", 0.60));
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(newPhotoFile);
+        });
+      }
+
+      try {
+        const docRef = glossary.doc(term);
+        const doc = await docRef.get();
+        let photos = doc.exists ? (doc.data().photos || []) : [];
+
+        if (newPhoto) photos.push(newPhoto);
+
+        await docRef.set({
+          definition: newDef,
+          photos: photos,
+          updated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Изменения сохранены!");
+        closeEditModal();
+        showAll();
+      } catch (e) {
+        alert("Ошибка: " + e.message);
+      }
+    }
+
+    function requestPasswordToDelete(term) {
+      const password = prompt("Введите пароль для удаления:");
+      if (password === PASSWORD) {
+        deleteTerm(term);
+      } else if (password !== null) {
+        alert("Неверный пароль!");
+      }
+    }
+
+    function deleteTerm(term) {
+      glossary.doc(term).delete()
+        .then(() => {
+          alert("Термин удалён!");
+          showAll();
+        })
+        .catch(e => {
+          alert("Ошибка удаления: " + e.message);
+        });
     }
 
     function toggleTheme() {
@@ -214,6 +455,8 @@
       document.body.setAttribute('data-theme', 'dark');
       document.querySelector('.theme-toggle i').className = 'fas fa-sun';
     }
+
+    window.onload = showAll;
   </script>
 </body>
 </html>
