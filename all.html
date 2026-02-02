@@ -1,34 +1,32 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Глоссарий — Все термины</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #e2e8f0;
-      --text-light: #94a3b8;
-      --border: #334155;
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --danger: #ef4444;
-      --warning: #ffc107;
-      --shadow: 0 10px 30px rgba(0,0,0,0.4);
-      --gradient: linear-gradient(135deg, #6366f1, #a78bfa);
-    }
-    [data-theme="light"] {
       --bg: #f8fafc;
       --card: #ffffff;
       --text: #1e293b;
       --text-light: #64748b;
       --border: #e2e8f0;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --danger: #ef4444;
+      --warning: #ffc107;
       --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --gradient: linear-gradient(135deg, #6366f1, #a78bfa);
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --text-light: #94a3b8;
+      --border: #334155;
+      --shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -212,7 +210,7 @@
     <header>
       <h1>Все термины</h1>
       <button class="theme-toggle" onclick="toggleTheme()">
-        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
       </button>
     </header>
 
@@ -249,19 +247,6 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-      authDomain: "my-glossary-55f58.firebaseapp.com",
-      projectId: "my-glossary-55f58",
-      storageBucket: "my-glossary-55f58.firebasestorage.app",
-      messagingSenderId: "875015503393",
-      appId: "1:875015503393:web:e8b19a0213be249275ad60"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const glossary = db.collection("glossary");
-
     const PASSWORD = "bm2315";
 
     let currentEditTerm = null;
@@ -280,47 +265,37 @@
       errorDiv.textContent = "";
       container.innerHTML = "";
 
-      glossary.get()
-        .then(snapshot => {
-          if (snapshot.empty) {
-            container.innerHTML = "<p style='text-align:center;color:var(--text-light);font-size:1.2rem;'>Пока нет терминов. Добавьте на странице «Добавить термин».</p>";
-            status.textContent = "Глоссарий пуст";
-            return;
-          }
+      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
 
-          const items = [];
-          snapshot.forEach(doc => {
-            items.push({ term: doc.id, def: doc.data().definition, photos: doc.data().photos || [] });
-          });
+      if (terms.length === 0) {
+        container.innerHTML = "<p style='text-align:center;color:var(--text-light);font-size:1.2rem;'>Пока нет терминов. Добавьте на странице «Добавить термин».</p>";
+        status.textContent = "Глоссарий пуст";
+        return;
+      }
 
-          items.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
+      terms.sort((a, b) => a.term.localeCompare(b.term, 'ru'));
 
-          items.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "term-item";
-            let html = `
-              <h3 class="term-title">${item.term}</h3>
-              <p class="term-def">${item.def.replace(/\n/g, "<br>")}</p>
-            `;
-            if (item.photos.length > 0) {
-              html += '<div class="photos">';
-              item.photos.forEach(p => html += `<img src="${p}" alt="${item.term}">`);
-              html += '</div>';
-            }
-            html += `
-              <button class="edit-btn" onclick="requestPasswordToEdit('${item.term.replace(/'/g, "\\'")}')">Изменить</button>
-              <button class="delete-btn" onclick="requestPasswordToDelete('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
-            `;
-            div.innerHTML = html;
-            container.appendChild(div);
-          });
+      terms.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "term-item";
+        let html = `
+          <h3 class="term-title">${item.term}</h3>
+          <p class="term-def">${item.definition.replace(/\n/g, "<br>")}</p>
+        `;
+        if (item.photos && item.photos.length > 0) {
+          html += '<div class="photos">';
+          item.photos.forEach(p => html += `<img src="${p}" alt="${item.term}">`);
+          html += '</div>';
+        }
+        html += `
+          <button class="edit-btn" onclick="requestPasswordToEdit('${item.term.replace(/'/g, "\\'")}')">Изменить</button>
+          <button class="delete-btn" onclick="requestPasswordToDelete('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
+        `;
+        div.innerHTML = html;
+        container.appendChild(div);
+      });
 
-          status.textContent = `Найдено терминов: ${items.length}`;
-        })
-        .catch(e => {
-          errorDiv.textContent = "Ошибка загрузки: " + e.message;
-          status.textContent = "Не удалось загрузить термины";
-        });
+      status.textContent = `Найдено терминов: ${terms.length}`;
     }
 
     function requestPasswordToEdit(term) {
@@ -333,30 +308,27 @@
     }
 
     function openEditModal(term) {
-      glossary.doc(term).get()
-        .then(doc => {
-          if (!doc.exists) return alert("Термин не найден");
+      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+      const found = terms.find(t => t.term === term);
+      if (!found) return alert("Термин не найден");
 
-          currentEditTerm = term;
+      currentEditTerm = term;
 
-          document.getElementById("editTerm").value = term;
-          document.getElementById("editDefinition").value = doc.data().definition;
-          const previewContainer = document.getElementById("editPreview-container");
-          previewContainer.innerHTML = "";
+      document.getElementById("editTerm").value = term;
+      document.getElementById("editDefinition").value = found.definition;
+      const previewContainer = document.getElementById("editPreview-container");
+      previewContainer.innerHTML = "";
 
-          const photos = doc.data().photos || [];
-          if (photos.length > 0) {
-            photos.forEach(p => {
-              const img = document.createElement("img");
-              img.src = p;
-              img.className = "edit-preview-img";
-              previewContainer.appendChild(img);
-            });
-          }
+      if (found.photos && found.photos.length > 0) {
+        found.photos.forEach(p => {
+          const img = document.createElement("img");
+          img.src = p;
+          img.className = "edit-preview-img";
+          previewContainer.appendChild(img);
+        });
+      }
 
-          document.getElementById("editModal").style.display = "flex";
-        })
-        .catch(e => alert("Ошибка: " + e.message));
+      document.getElementById("editModal").style.display = "flex";
     }
 
     function closeEditModal() {
@@ -375,6 +347,8 @@
         alert("Заполните определение!");
         return;
       }
+
+      let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
 
       let newPhoto = null;
       if (newPhotoFile) {
@@ -396,25 +370,21 @@
         });
       }
 
-      try {
-        const docRef = glossary.doc(term);
-        const doc = await docRef.get();
-        let photos = doc.exists ? (doc.data().photos || []) : [];
+      terms = terms.map(t => {
+        if (t.term === term) {
+          t.definition = newDef;
+          if (newPhoto) {
+            t.photos = t.photos || [];
+            t.photos.push(newPhoto);
+          }
+        }
+        return t;
+      });
 
-        if (newPhoto) photos.push(newPhoto);
-
-        await docRef.set({
-          definition: newDef,
-          photos: photos,
-          updated: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        alert("Изменения сохранены!");
-        closeEditModal();
-        showAll();
-      } catch (e) {
-        alert("Ошибка: " + e.message);
-      }
+      localStorage.setItem("glossary", JSON.stringify(terms));
+      alert("Изменения сохранены!");
+      closeEditModal();
+      showAll();
     }
 
     function requestPasswordToDelete(term) {
@@ -427,34 +397,31 @@
     }
 
     function deleteTerm(term) {
-      glossary.doc(term).delete()
-        .then(() => {
-          alert("Термин удалён!");
-          showAll();
-        })
-        .catch(e => {
-          alert("Ошибка удаления: " + e.message);
-        });
+      let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+      terms = terms.filter(t => t.term !== term);
+      localStorage.setItem("glossary", JSON.stringify(terms));
+      showAll();
+      alert("Термин удалён");
     }
 
     function toggleTheme() {
-      const body = document.body;
+      const html = document.documentElement;
       const icon = document.querySelector('.theme-toggle i');
-      if (body.getAttribute('data-theme') === 'dark') {
-        body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
+      
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
         icon.className = 'fas fa-moon';
       } else {
-        body.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
+        html.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
         icon.className = 'fas fa-sun';
       }
     }
 
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.setAttribute('data-theme', 'dark');
-      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
-    }
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.querySelector('.theme-toggle i').className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
 
     window.onload = showAll;
   </script>
