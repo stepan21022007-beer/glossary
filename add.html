@@ -216,19 +216,21 @@
       let existing = terms.find(t => t.term === term);
 
       if (existing) {
+        // термин уже есть — обновляем определение и ДОБАВЛЯЕМ фото
         existing.definition = def;
         if (photoUrl) {
           existing.photos = existing.photos || [];
           existing.photos.push(photoUrl);
         }
       } else {
+        // новый термин
         const newTerm = { term, definition: def, photos: [] };
         if (photoUrl) newTerm.photos.push(photoUrl);
         terms.push(newTerm);
       }
 
       localStorage.setItem("glossary", JSON.stringify(terms));
-      alert("Сохранено!");
+      alert("Сохранено! Добавлено " + (photoUrl ? "фото" : "без фото"));
       document.getElementById("term").value = "";
       document.getElementById("definition").value = "";
       document.getElementById("photo").value = "";
