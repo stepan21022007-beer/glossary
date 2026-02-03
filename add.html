@@ -7,167 +7,55 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --text-light: #64748b;
-      --border: #e2e8f0;
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --danger: #ef4444;
-      --warning: #ffc107;
-      --shadow: 0 10px 30px rgba(0,0,0,0.08);
-      --gradient: linear-gradient(135deg, #6366f1, #a78bfa);
-    }
-    [data-theme="dark"] {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #e2e8f0;
-      --text-light: #94a3b8;
-      --border: #334155;
-      --shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      transition: background 0.5s ease, color 0.5s ease;
-    }
-    .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-    h1 { font-size: 2.2rem; font-weight: 800; margin: 0; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    nav {
-      display: flex;
-      gap: 2rem;
-      justify-content: center;
-      margin: 2rem 0;
-      flex-wrap: wrap;
-    }
-    nav a {
-      color: var(--text-light);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      padding: 0.8rem 1.5rem;
-      border-radius: 50px;
-      transition: all 0.3s;
-      background: rgba(99,102,241,0.1);
-    }
-    nav a:hover {
-      background: var(--primary);
-      color: white;
-      transform: translateY(-3px);
-    }
-    .theme-toggle {
-      background: none;
-      border: none;
-      font-size: 1.8rem;
-      cursor: pointer;
-      color: var(--text-light);
-      transition: all 0.3s;
-    }
-    .theme-toggle:hover { color: var(--primary); transform: rotate(20deg) scale(1.2); }
-    section {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 2.5rem;
-      margin: 2rem 0;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      transition: all 0.4s ease;
-    }
-    section:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-    input, textarea {
-      width: 100%;
-      padding: 1rem;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      font-size: 1.1rem;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0.8rem 0;
-      transition: all 0.3s;
-    }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(99,102,241,0.2);
-    }
-    button {
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      transition: all 0.3s;
-    }
-    button:hover { background: var(--primary-dark); transform: translateY(-2px); }
-    #preview-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
-    .preview-img { max-width: 200px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #6366f1; }
+    nav { text-align: center; margin: 20px 0; }
+    nav a { margin: 0 15px; color: #6366f1; text-decoration: none; font-weight: bold; }
+    section { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+    input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; }
+    button { padding: 12px 24px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #4f46e5; }
+    #preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    #preview-container img { max-width: 150px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    #error { color: #ef4444; margin-top: 10px; text-align: center; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Добавить термин</h1>
-      <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
-        <i class="fas fa-sun"></i>
-      </button>
-    </header>
+  <h1>Добавить термин</h1>
 
-    <nav>
-      <a href="./index.html">Поиск</a>
-      <a href="./all.html">Все термины</a>
-    </nav>
+  <nav>
+    <a href="./index.html">Поиск</a>
+    <a href="./all.html">Все термины</a>
+  </nav>
 
-    <section id="passwordForm">
-      <h3>Введите пароль</h3>
-      <input type="password" id="password" placeholder="Пароль..." />
-      <button onclick="checkPassword()">Войти</button>
-      <div id="error"></div>
-    </section>
+  <section id="passwordForm">
+    <input type="password" id="password" placeholder="Пароль..." />
+    <button onclick="checkPassword()">Войти</button>
+    <div id="error"></div>
+  </section>
 
-    <section id="addForm" style="display:none;">
-      <input id="term" placeholder="Термин (обязательно)" />
-      <textarea id="definition" rows="6" placeholder="Определение..."></textarea>
-      
-      <label style="display:block; margin:1.2rem 0 0.6rem; font-weight:600;">Добавить фото:</label>
-      <input type="file" id="photo" accept="image/*" />
-      <div id="preview-container"></div>
+  <section id="addForm" style="display:none;">
+    <input id="term" placeholder="Термин (обязательно)" />
+    <textarea id="definition" rows="5" placeholder="Определение..."></textarea>
+    
+    <label>Добавить фото (можно несколько):</label>
+    <input type="file" id="photo" accept="image/*" />
+    <div id="preview-container"></div>
 
-      <button onclick="addOrUpdate()">Сохранить</button>
-    </section>
-  </div>
+    <button onclick="addOrUpdate()">Сохранить</button>
+  </section>
 
   <script>
     const PASSWORD = "bm2315";
 
     function checkPassword() {
       const pass = document.getElementById("password").value;
-      const passwordForm = document.getElementById("passwordForm");
-      const addForm = document.getElementById("addForm");
-      const error = document.getElementById("error");
-
       if (pass === PASSWORD) {
-        passwordForm.style.display = "none";
-        addForm.style.display = "block";
-        error.textContent = "";
+        document.getElementById("passwordForm").style.display = "none";
+        document.getElementById("addForm").style.display = "block";
       } else {
-        error.textContent = "Неверный пароль!";
+        document.getElementById("error").textContent = "Неверный пароль!";
       }
     }
 
@@ -178,86 +66,63 @@
         reader.onload = function(e) {
           const img = document.createElement("img");
           img.src = e.target.result;
-          img.style.maxWidth = "200px";
-          img.style.borderRadius = "12px";
           document.getElementById("preview-container").appendChild(img);
         };
         reader.readAsDataURL(file);
       }
     });
 
-    async function addOrUpdate() {
+    function addOrUpdate() {
       const term = document.getElementById("term").value.trim();
       const def = document.getElementById("definition").value.trim();
       const photoFile = document.getElementById("photo").files[0];
-      const error = document.getElementById("error");
 
       if (!term || !def) {
-        error.textContent = "Заполните оба поля!";
+        alert("Заполните оба поля!");
         return;
       }
 
       let photoUrl = null;
       if (photoFile) {
-        const img = await new Promise(resolve => {
-          const image = new Image();
-          image.onload = () => resolve(image);
-          image.src = URL.createObjectURL(photoFile);
-        });
-
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width / 3.5 * 0.85;
-        canvas.height = img.height / 3.5 * 0.85;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        photoUrl = canvas.toDataURL("image/jpeg", 0.60);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          photoUrl = e.target.result;
+          saveTerm(term, def, photoUrl);
+        };
+        reader.readAsDataURL(photoFile);
+      } else {
+        saveTerm(term, def, null);
       }
+    }
 
+    function saveTerm(term, def, photoUrl) {
       let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
 
-      let existingIndex = terms.findIndex(t => t.term === term);
+      let existing = terms.find(t => t.term === term);
 
-      if (existingIndex !== -1) {
-        // термин уже есть — обновляем определение и ДОБАВЛЯЕМ фото в конец массива
-        terms[existingIndex].definition = def;
+      if (existing) {
+        existing.definition = def;
         if (photoUrl) {
-          terms[existingIndex].photos = terms[existingIndex].photos || [];
-          terms[existingIndex].photos.push(photoUrl);
+          existing.photos = existing.photos || [];
+          existing.photos.push(photoUrl);
         }
       } else {
-        // новый термин
         const newTerm = { term, definition: def, photos: [] };
         if (photoUrl) newTerm.photos.push(photoUrl);
         terms.push(newTerm);
       }
 
       localStorage.setItem("glossary", JSON.stringify(terms));
-      alert("Термин сохранён/обновлён! Фото добавлено (если выбрано).");
+      alert("Сохранено! Добавлено " + (photoUrl ? "фото" : "без фото"));
       document.getElementById("term").value = "";
       document.getElementById("definition").value = "";
       document.getElementById("photo").value = "";
       document.getElementById("preview-container").innerHTML = "";
-      error.textContent = "";
     }
 
     function toggleTheme() {
-      const html = document.documentElement;
-      const icon = document.querySelector('.theme-toggle i');
-      
-      if (html.getAttribute('data-theme') === 'light') {
-        html.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'dark');
-        icon.className = 'fas fa-moon';
-      } else {
-        html.setAttribute('data-theme', 'light');
-        localStorage.setItem('theme', 'light');
-        icon.className = 'fas fa-sun';
-      }
+      document.documentElement.toggleAttribute('data-theme');
     }
-
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    document.querySelector('.theme-toggle i').className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
   </script>
 </body>
 </html>
