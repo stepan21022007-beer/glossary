@@ -6,8 +6,8 @@
   <title>Глоссарий — Поиск</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
@@ -134,7 +134,8 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     .term-title { margin: 0 0 1rem; color: var(--primary); font-size: 1.8rem; font-weight: 800; }
     .term-def { margin: 0; color: var(--text-light); line-height: 1.8; font-size: 1.1rem; }
-    .photos img { max-width: 100%; border-radius: 12px; margin: 1rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+    .photos { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
+    .photos img { max-width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
     #error { color: var(--danger); margin-top: 1rem; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
   </style>
 </head>
@@ -178,27 +179,35 @@
 
     function search() {
       const term = document.getElementById("searchTerm").value.trim();
-      if (!term) return alert("Введите термин");
+      if (!term) {
+        alert("Введите термин!");
+        return;
+      }
 
       glossary.doc(term).get()
         .then(doc => {
           const result = document.getElementById("result");
           const error = document.getElementById("error");
           error.textContent = "";
+          result.innerHTML = "";
+
           if (doc.exists) {
             const data = doc.data();
             let html = `<h3 class="term-title">${term}</h3>
                         <p class="term-def">${data.definition.replace(/\n/g, "<br>")}</p>`;
+
             if (data.photos && data.photos.length > 0) {
               html += '<div class="photos">';
-              data.photos.forEach(p => html += `<img src="${p}" alt="${term}" style="max-width:220px;">`);
+              data.photos.forEach(p => {
+                html += `<img src="${p}" alt="${term}" style="max-width:220px;">`;
+              });
               html += '</div>';
             }
+
             result.innerHTML = html;
             result.style.display = "block";
           } else {
             error.textContent = "Термин не найден 😔";
-            result.style.display = "none";
           }
         })
         .catch(e => {
