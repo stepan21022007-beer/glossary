@@ -6,8 +6,6 @@
   <title>Глоссарий — Добавить термин</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
@@ -147,8 +145,8 @@
       <input id="term" placeholder="Термин (обязательно)" />
       <textarea id="definition" rows="6" placeholder="Определение..."></textarea>
       
-      <label style="display:block; margin:1.2rem 0 0.6rem; font-weight:600;">Добавить фото:</label>
-      <input type="file" id="photo" accept="image/*" />
+      <label style="display:block; margin:1.2rem 0 0.6rem; font-weight:600;">Добавить фото (можно сразу несколько):</label>
+      <input type="file" id="photo" accept="image/*" multiple />
       <div id="preview-container"></div>
 
       <button onclick="addOrUpdate()">Сохранить</button>
@@ -156,19 +154,6 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
-      authDomain: "my-glossary-55f58.firebaseapp.com",
-      projectId: "my-glossary-55f58",
-      storageBucket: "my-glossary-55f58.firebasestorage.app",
-      messagingSenderId: "875015503393",
-      appId: "1:875015503393:web:e8b19a0213be249275ad60"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const glossary = db.collection("glossary");
-
     const PASSWORD = "bm2315";
 
     function checkPassword() {
@@ -187,24 +172,26 @@
     }
 
     document.getElementById("photo").addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      if (file) {
+      const previewContainer = document.getElementById("preview-container");
+      previewContainer.innerHTML = ""; // очищаем старый предпросмотр
+
+      Array.from(e.target.files).forEach(file => {
         const reader = new FileReader();
         reader.onload = function(e) {
           const img = document.createElement("img");
           img.src = e.target.result;
           img.style.maxWidth = "200px";
           img.style.borderRadius = "12px";
-          document.getElementById("preview-container").appendChild(img);
+          previewContainer.appendChild(img);
         };
         reader.readAsDataURL(file);
-      }
+      });
     });
 
     async function addOrUpdate() {
       const term = document.getElementById("term").value.trim();
       const def = document.getElementById("definition").value.trim();
-      const photoFile = document.getElementById("photo").files[0];
+      const photoFiles = document.getElementById("photo").files;
       const error = document.getElementById("error");
 
       if (!term || !def) {
@@ -212,46 +199,49 @@
         return;
       }
 
-      let photoUrl = null;
-      if (photoFile) {
-        const img = await new Promise(resolve => {
-          const image = new Image();
-          image.onload = () => resolve(image);
-          image.src = URL.createObjectURL(photoFile);
-        });
-
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width / 3.5 * 0.85;
-        canvas.height = img.height / 3.5 * 0.85;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        photoUrl = canvas.toDataURL("image/jpeg", 0.60);
-      }
-
-      try {
-        const docRef = glossary.doc(term);
-        const doc = await docRef.get();
-        let photos = [];
-        if (doc.exists) {
-          photos = doc.data().photos || [];
+      const photoUrls = [];
+      if (photoFiles.length > 0) {
+        for (const file of photoFiles) {
+          const photoUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const img = new Image();
+              img.onload = function() {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width / 3.5 * 0.85;
+                canvas.height = img.height / 3.5 * 0.85;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL("image/jpeg", 0.60));
+              };
+              img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          });
+          photoUrls.push(photoUrl);
         }
-        if (photoUrl) photos.push(photoUrl);
-
-        await docRef.set({
-          definition: def,
-          photos: photos,
-          updated: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        alert("Термин сохранён/обновлён!");
-        document.getElementById("term").value = "";
-        document.getElementById("definition").value = "";
-        document.getElementById("photo").value = "";
-        document.getElementById("preview-container").innerHTML = "";
-        error.textContent = "";
-      } catch (e) {
-        error.textContent = "Ошибка: " + e.message;
       }
+
+      let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+
+      let existing = terms.find(t => t.term === term);
+
+      if (existing) {
+        existing.definition = def;
+        existing.photos = existing.photos || [];
+        existing.photos.push(...photoUrls); // добавляем все новые фотки сразу
+      } else {
+        const newTerm = { term, definition: def, photos: photoUrls };
+        terms.push(newTerm);
+      }
+
+      localStorage.setItem("glossary", JSON.stringify(terms));
+      alert(`Сохранено! Добавлено ${photoUrls.length} фото`);
+      document.getElementById("term").value = "";
+      document.getElementById("definition").value = "";
+      document.getElementById("photo").value = "";
+      document.getElementById("preview-container").innerHTML = "";
+      error.textContent = "";
     }
 
     function toggleTheme() {
