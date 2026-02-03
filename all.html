@@ -284,12 +284,16 @@
         `;
         if (item.photos && item.photos.length > 0) {
           html += '<div class="photos">';
-          item.photos.forEach(p => html += `<img src="${p}" alt="${item.term}">`);
+          item.photos.forEach(p => {
+            html += `<img src="${p}" alt="${item.term}" style="max-width:220px;">`;
+          });
           html += '</div>';
         }
         html += `
-          <button class="edit-btn" onclick="requestPasswordToEdit('${item.term.replace(/'/g, "\\'")}')">Изменить</button>
-          <button class="delete-btn" onclick="requestPasswordToDelete('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
+          <div class="actions">
+            <button class="edit-btn" onclick="requestPasswordToEdit('${item.term.replace(/'/g, "\\'")}')">Изменить</button>
+            <button class="delete-btn" onclick="requestPasswordToDelete('${item.term.replace(/'/g, "\\'")}')">Удалить</button>
+          </div>
         `;
         div.innerHTML = html;
         container.appendChild(div);
