@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Глоссарий — Поиск</title>
+  <title>Глоссарий — Добавить термин</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -36,22 +36,15 @@
       min-height: 100vh;
       transition: background 0.5s ease, color 0.5s ease;
     }
-    .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+    .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 2rem 0 1rem;
+      padding: 1.5rem 0;
       border-bottom: 1px solid var(--border);
     }
-    h1 {
-      font-size: 2.4rem;
-      font-weight: 900;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0;
-    }
+    h1 { font-size: 2.2rem; font-weight: 800; margin: 0; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     nav {
       display: flex;
       gap: 2rem;
@@ -93,7 +86,7 @@
       transition: all 0.4s ease;
     }
     section:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-    input {
+    input, textarea {
       width: 100%;
       padding: 1rem;
       border: 2px solid var(--border);
@@ -101,9 +94,10 @@
       font-size: 1.1rem;
       background: var(--bg);
       color: var(--text);
+      margin: 0.8rem 0;
       transition: all 0.3s;
     }
-    input:focus {
+    input:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 4px rgba(99,102,241,0.2);
@@ -120,72 +114,130 @@
       transition: all 0.3s;
     }
     button:hover { background: var(--primary-dark); transform: translateY(-2px); }
-    #result {
-      margin-top: 2rem;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      display: none;
-      animation: fadeIn 0.6s ease;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-    .term-title { margin: 0 0 1rem; color: var(--primary); font-size: 1.8rem; font-weight: 800; }
-    .term-def { margin: 0; color: var(--text-light); line-height: 1.8; font-size: 1.1rem; }
-    .photos img { max-width: 100%; border-radius: 12px; margin: 1rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-    #error { color: var(--danger); margin-top: 1rem; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
+    #preview-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
+    .preview-img { max-width: 200px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
   </style>
 </head>
 <body>
 
   <div class="container">
     <header>
-      <h1>Глоссарий</h1>
+      <h1>Добавить термин</h1>
       <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
         <i class="fas fa-sun"></i>
       </button>
     </header>
 
     <nav>
-      <a href="all.html">Все термины</a>
-      <a href="add.html">Добавить термин</a>
+      <a href="./index.html">Поиск</a>
+      <a href="./all.html">Все термины</a>
     </nav>
 
-    <section>
-      <input id="searchTerm" placeholder="Введите термин..." />
-      <button onclick="search()">Найти</button>
-      <div id="result"></div>
+    <section id="passwordForm">
+      <h3>Введите пароль</h3>
+      <input type="password" id="password" placeholder="Пароль..." />
+      <button onclick="checkPassword()">Войти</button>
+      <div id="error"></div>
     </section>
 
-    <div id="error"></div>
+    <section id="addForm" style="display:none;">
+      <input id="term" placeholder="Термин (обязательно)" />
+      <textarea id="definition" rows="6" placeholder="Определение..."></textarea>
+      
+      <label style="display:block; margin:1.2rem 0 0.6rem; font-weight:600;">Добавить фото:</label>
+      <input type="file" id="photo" accept="image/*" />
+      <div id="preview-container"></div>
+
+      <button onclick="addOrUpdate()">Сохранить</button>
+    </section>
   </div>
 
   <script>
-    function search() {
-      const term = document.getElementById("searchTerm").value.trim();
-      if (!term) return alert("Введите термин");
+    const PASSWORD = "bm2315";
 
-      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
-      const found = terms.find(t => t.term.toLowerCase() === term.toLowerCase());
-
-      const result = document.getElementById("result");
+    function checkPassword() {
+      const pass = document.getElementById("password").value;
+      const passwordForm = document.getElementById("passwordForm");
+      const addForm = document.getElementById("addForm");
       const error = document.getElementById("error");
-      error.textContent = "";
 
-      if (found) {
-        let html = `<h3 class="term-title">${found.term}</h3>
-                    <p class="term-def">${found.definition.replace(/\n/g, "<br>")}</p>`;
-        if (found.photos && found.photos.length > 0) {
-          html += '<div class="photos">';
-          found.photos.forEach(p => html += `<img src="${p}" alt="${found.term}">`);
-          html += '</div>';
-        }
-        result.innerHTML = html;
-        result.style.display = "block";
+      if (pass === PASSWORD) {
+        passwordForm.style.display = "none";
+        addForm.style.display = "block";
+        error.textContent = "";
       } else {
-        error.textContent = "Термин не найден 😔";
-        result.style.display = "none";
+        error.textContent = "Неверный пароль!";
       }
+    }
+
+    document.getElementById("photo").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          img.style.maxWidth = "200px";
+          img.style.borderRadius = "12px";
+          document.getElementById("preview-container").appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    async function addOrUpdate() {
+      const term = document.getElementById("term").value.trim();
+      const def = document.getElementById("definition").value.trim();
+      const photoFile = document.getElementById("photo").files[0];
+      const error = document.getElementById("error");
+
+      if (!term || !def) {
+        error.textContent = "Заполните оба поля!";
+        return;
+      }
+
+      let photoUrl = null;
+      if (photoFile) {
+        const img = await new Promise(resolve => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.src = URL.createObjectURL(photoFile);
+        });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width / 3.5 * 0.85;
+        canvas.height = img.height / 3.5 * 0.85;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        photoUrl = canvas.toDataURL("image/jpeg", 0.60);
+      }
+
+      let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
+
+      let existingIndex = terms.findIndex(t => t.term === term);
+
+      if (existingIndex !== -1) {
+        // термин уже есть — обновляем определение и добавляем фото к массиву
+        terms[existingIndex].definition = def;
+        if (photoUrl) {
+          terms[existingIndex].photos = terms[existingIndex].photos || [];
+          terms[existingIndex].photos.push(photoUrl);
+        }
+      } else {
+        // новый термин
+        const newTerm = { term, definition: def, photos: [] };
+        if (photoUrl) newTerm.photos.push(photoUrl);
+        terms.push(newTerm);
+      }
+
+      localStorage.setItem("glossary", JSON.stringify(terms));
+      alert("Термин сохранён/обновлён! Фото добавлено (если выбрано).");
+      document.getElementById("term").value = "";
+      document.getElementById("definition").value = "";
+      document.getElementById("photo").value = "";
+      document.getElementById("preview-container").innerHTML = "";
+      error.textContent = "";
     }
 
     function toggleTheme() {
