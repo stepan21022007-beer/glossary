@@ -218,7 +218,7 @@
       let existingIndex = terms.findIndex(t => t.term === term);
 
       if (existingIndex !== -1) {
-        // термин уже есть — обновляем определение и добавляем фото к массиву
+        // термин уже есть — обновляем определение и ДОБАВЛЯЕМ фото в массив
         terms[existingIndex].definition = def;
         if (photoUrl) {
           terms[existingIndex].photos = terms[existingIndex].photos || [];
