@@ -6,6 +6,8 @@
   <title>Глоссарий — Добавить термин</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
@@ -154,6 +156,19 @@
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
+
     const PASSWORD = "bm2315";
 
     function checkPassword() {
@@ -182,7 +197,7 @@
       });
     });
 
-    function addOrUpdate() {
+    async function addOrUpdate() {
       const term = document.getElementById("term").value.trim();
       const def = document.getElementById("definition").value.trim();
       const files = document.getElementById("photo").files;
@@ -192,53 +207,49 @@
         return;
       }
 
-      let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
-      let existing = terms.find(t => t.term === term);
-      let photos = [];
-
+      const photoUrls = [];
       if (files.length > 0) {
-        let loaded = 0;
-        Array.from(files).forEach(file => {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-              const canvas = document.createElement("canvas");
-              canvas.width = img.width / 3.5 * 0.85;
-              canvas.height = img.height / 3.5 * 0.85;
-              const ctx = canvas.getContext("2d");
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              photos.push(canvas.toDataURL("image/jpeg", 0.60));
-
-              loaded++;
-              if (loaded === files.length) {
-                save();
-              }
+        for (const file of files) {
+          const photoUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const img = new Image();
+              img.onload = function() {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width / 3.5 * 0.85;
+                canvas.height = img.height / 3.5 * 0.85;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL("image/jpeg", 0.60));
+              };
+              img.src = e.target.result;
             };
-            img.src = e.target.result;
-          };
-          reader.readAsDataURL(file);
-        });
-      } else {
-        save();
+            reader.readAsDataURL(file);
+          });
+          photoUrls.push(photoUrl);
+        }
       }
 
-      function save() {
-        if (existing) {
-          existing.definition = def;
-          existing.photos = existing.photos || [];
-          existing.photos.push(...photos);
-        } else {
-          const newTerm = { term, definition: def, photos };
-          terms.push(newTerm);
-        }
+      try {
+        const docRef = glossary.doc(term);
+        const doc = await docRef.get();
+        let photos = doc.exists ? doc.data().photos || [] : [];
 
-        localStorage.setItem("glossary", JSON.stringify(terms));
-        alert(`Сохранено! Добавлено ${photos.length} фото`);
+        photos.push(...photoUrls);
+
+        await docRef.set({
+          definition: def,
+          photos: photos,
+          updated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert(`Сохранено! Добавлено ${photoUrls.length} фото`);
         document.getElementById("term").value = "";
         document.getElementById("definition").value = "";
         document.getElementById("photo").value = "";
         document.getElementById("preview-container").innerHTML = "";
+      } catch (e) {
+        alert("Ошибка: " + e.message);
       }
     }
 
