@@ -115,7 +115,7 @@
     }
     button:hover { background: var(--primary-dark); transform: translateY(-2px); }
     #preview-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
-    .preview-img { max-width: 200px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .preview-img { max-width: 180px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     #error { color: var(--danger); margin: 1rem 0; padding: 1rem; background: rgba(239,68,68,0.15); border-radius: 8px; text-align: center; }
   </style>
 </head>
@@ -158,90 +158,88 @@
 
     function checkPassword() {
       const pass = document.getElementById("password").value;
-      const passwordForm = document.getElementById("passwordForm");
-      const addForm = document.getElementById("addForm");
-      const error = document.getElementById("error");
-
       if (pass === PASSWORD) {
-        passwordForm.style.display = "none";
-        addForm.style.display = "block";
-        error.textContent = "";
+        document.getElementById("passwordForm").style.display = "none";
+        document.getElementById("addForm").style.display = "block";
       } else {
-        error.textContent = "Неверный пароль!";
+        document.getElementById("error").textContent = "Неверный пароль!";
       }
     }
 
     document.getElementById("photo").addEventListener("change", function(e) {
-      const previewContainer = document.getElementById("preview-container");
-      previewContainer.innerHTML = ""; // очищаем старый предпросмотр
-
+      const preview = document.getElementById("preview-container");
+      preview.innerHTML = "";
       Array.from(e.target.files).forEach(file => {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function(ev) {
           const img = document.createElement("img");
-          img.src = e.target.result;
-          img.style.maxWidth = "200px";
+          img.src = ev.target.result;
+          img.style.maxWidth = "180px";
           img.style.borderRadius = "12px";
-          previewContainer.appendChild(img);
+          preview.appendChild(img);
         };
         reader.readAsDataURL(file);
       });
     });
 
-    async function addOrUpdate() {
+    function addOrUpdate() {
       const term = document.getElementById("term").value.trim();
       const def = document.getElementById("definition").value.trim();
-      const photoFiles = document.getElementById("photo").files;
-      const error = document.getElementById("error");
+      const files = document.getElementById("photo").files;
 
       if (!term || !def) {
-        error.textContent = "Заполните оба поля!";
+        alert("Заполните оба поля!");
         return;
       }
 
-      const photoUrls = [];
-      if (photoFiles.length > 0) {
-        for (const file of photoFiles) {
-          const photoUrl = await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              const img = new Image();
-              img.onload = function() {
-                const canvas = document.createElement("canvas");
-                canvas.width = img.width / 3.5 * 0.85;
-                canvas.height = img.height / 3.5 * 0.85;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                resolve(canvas.toDataURL("image/jpeg", 0.60));
-              };
-              img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-          });
-          photoUrls.push(photoUrl);
-        }
-      }
-
       let terms = JSON.parse(localStorage.getItem("glossary") || "[]");
-
       let existing = terms.find(t => t.term === term);
+      let photos = [];
 
-      if (existing) {
-        existing.definition = def;
-        existing.photos = existing.photos || [];
-        existing.photos.push(...photoUrls); // добавляем все новые фотки сразу
+      if (files.length > 0) {
+        let loaded = 0;
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+              const canvas = document.createElement("canvas");
+              canvas.width = img.width / 3.5 * 0.85;
+              canvas.height = img.height / 3.5 * 0.85;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              photos.push(canvas.toDataURL("image/jpeg", 0.60));
+
+              loaded++;
+              if (loaded === files.length) {
+                save();
+              }
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
       } else {
-        const newTerm = { term, definition: def, photos: photoUrls };
-        terms.push(newTerm);
+        save();
       }
 
-      localStorage.setItem("glossary", JSON.stringify(terms));
-      alert(`Сохранено! Добавлено ${photoUrls.length} фото`);
-      document.getElementById("term").value = "";
-      document.getElementById("definition").value = "";
-      document.getElementById("photo").value = "";
-      document.getElementById("preview-container").innerHTML = "";
-      error.textContent = "";
+      function save() {
+        if (existing) {
+          existing.definition = def;
+          existing.photos = existing.photos || [];
+          existing.photos.push(...photos);
+        } else {
+          const newTerm = { term, definition: def, photos };
+          terms.push(newTerm);
+        }
+
+        localStorage.setItem("glossary", JSON.stringify(terms));
+        alert(`Сохранено! Добавлено ${photos.length} фото`);
+        document.getElementById("term").value = "";
+        document.getElementById("definition").value = "";
+        document.getElementById("photo").value = "";
+        document.getElementById("preview-container").innerHTML = "";
+      }
     }
 
     function toggleTheme() {
