@@ -6,6 +6,8 @@
   <title>Глоссарий — Поиск</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
@@ -161,31 +163,47 @@
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGrlpsF9eTQvb7B2Ec29TnaD3Zl-VBjbs",
+      authDomain: "my-glossary-55f58.firebaseapp.com",
+      projectId: "my-glossary-55f58",
+      storageBucket: "my-glossary-55f58.firebasestorage.app",
+      messagingSenderId: "875015503393",
+      appId: "1:875015503393:web:e8b19a0213be249275ad60"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const glossary = db.collection("glossary");
+
     function search() {
       const term = document.getElementById("searchTerm").value.trim();
       if (!term) return alert("Введите термин");
 
-      const terms = JSON.parse(localStorage.getItem("glossary") || "[]");
-      const found = terms.find(t => t.term.toLowerCase() === term.toLowerCase());
-
-      const result = document.getElementById("result");
-      const error = document.getElementById("error");
-      error.textContent = "";
-
-      if (found) {
-        let html = `<h3 class="term-title">${found.term}</h3>
-                    <p class="term-def">${found.definition.replace(/\n/g, "<br>")}</p>`;
-        if (found.photos && found.photos.length > 0) {
-          html += '<div class="photos">';
-          found.photos.forEach(p => html += `<img src="${p}" alt="${found.term}">`);
-          html += '</div>';
-        }
-        result.innerHTML = html;
-        result.style.display = "block";
-      } else {
-        error.textContent = "Термин не найден 😔";
-        result.style.display = "none";
-      }
+      glossary.doc(term).get()
+        .then(doc => {
+          const result = document.getElementById("result");
+          const error = document.getElementById("error");
+          error.textContent = "";
+          if (doc.exists) {
+            const data = doc.data();
+            let html = `<h3 class="term-title">${term}</h3>
+                        <p class="term-def">${data.definition.replace(/\n/g, "<br>")}</p>`;
+            if (data.photos && data.photos.length > 0) {
+              html += '<div class="photos">';
+              data.photos.forEach(p => html += `<img src="${p}" alt="${term}" style="max-width:220px;">`);
+              html += '</div>';
+            }
+            result.innerHTML = html;
+            result.style.display = "block";
+          } else {
+            error.textContent = "Термин не найден 😔";
+            result.style.display = "none";
+          }
+        })
+        .catch(e => {
+          document.getElementById("error").textContent = "Ошибка: " + e.message;
+        });
     }
 
     function toggleTheme() {
